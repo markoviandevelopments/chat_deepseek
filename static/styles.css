@@ -1,7 +1,9 @@
+
+
 body {
     font-family: Arial, sans-serif;
     text-align: center;
-    background-color: #777777;
+    background-color: #333;
     margin: 20px;
 }
 
@@ -11,11 +13,12 @@ body {
     height: 400px;
     overflow-y: auto;
     border: 1px solid #FFF;
-    background-color: #000;
+    background-color: #111;
     
     padding: 10px;
     margin: auto;
     text-align: left;
+    color: rgb(34, 228, 34);
 }
 
 #userInput {
@@ -29,6 +32,9 @@ button {
     cursor: pointer;
 }
 
-p {
-    color: rgb(34, 228, 34);
+
+
+#description {
+    text-align: left;
+    color: #FFF;
 }
