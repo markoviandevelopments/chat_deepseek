@@ -43,6 +43,18 @@ button {
     color: #FFF;
 }
 
-#role {
+#role_user {
+    color: #00F;
+}
+
+#role_deepseek {
     color: #F00;
+}
+
+#userText {
+    color: #66F;
+}
+
+#deepseekText {
+    color: #F66;
 }

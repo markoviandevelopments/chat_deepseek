@@ -38,7 +38,11 @@ function updateChat(history) {
     let newChatHTML = "";
     history.forEach(entry => {
         let role = entry.role === "user" ? "You" : "DeepSeek";
-        newChatHTML += `<p id="role"><strong>${role}:</strong> ${entry.message.replace(/\n/g, "<br>")}</p>`;
+        if (role=="You") {
+            newChatHTML += `<p id="role_user"><strong>${role}:</strong></p><p id="userText"> ${entry.message.replace(/\n/g, "<br>")}</p>`;
+        } else{
+            newChatHTML += `<p id="role_deepseek"><strong>${role}:</strong></p><p id="deepseekText"> ${entry.message.replace(/\n/g, "<br>")}</p>`;
+        }
     });
 
     // Only update if the chat content actually changed (avoids unnecessary re-renders)
