@@ -5,7 +5,7 @@ async function sendMessage() {
     let chatBox = document.getElementById("chatBox");
 
     // Immediately show the user's message
-    chatBox.innerHTML += `<p><strong>You:</strong> ${userInput.replace(/\n/g, "<br>")}</p>`;
+    chatBox.innerHTML += `<p id="role_user"><strong>You:</strong></p><p id="userText> ${userInput.replace(/\n/g, "<br>")}</p>`;
     chatBox.scrollTop = chatBox.scrollHeight; // Auto-scroll to bottom
     document.getElementById("userInput").value = ""; // Clear input
 
