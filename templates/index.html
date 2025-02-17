@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeepSeek Chat</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f5f5f5;
+            margin: 20px;
+        }
+        #chatBox {
+            width: 80%;
+            max-width: 800px;
+            height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            background-color: white;
+            padding: 10px;
+            margin: auto;
+            text-align: left;
+        }
+        #userInput {
+            width: 70%;
+            padding: 10px;
+            margin-top: 10px;
+        }
+        button {
+            padding: 10px;
+            cursor: pointer;
+        }
+    </style>
+    <script>
+        async function sendMessage() {
+            let userInput = document.getElementById("userInput").value;
+            if (!userInput.trim()) return;
+
+            document.getElementById("chatBox").innerHTML += `<p><strong>You:</strong> ${userInput}</p>`;
+            document.getElementById("userInput").value = "";
+
+            let response = await fetch('/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: userInput })
+            });
+
+            let data = await response.json();
+            if (data.response) {
+                document.getElementById("chatBox").innerHTML += `<p><strong>DeepSeek:</strong> ${data.response}</p>`;
+            }
+        }
+
+        async function clearChat() {
+            await fetch('/clear', { method: 'POST' });
+            document.getElementById("chatBox").innerHTML = "";
+        }
+    </script>
+</head>
+<body>
+    <h1>DeepSeek Chat</h1>
+    <div id="chatBox"></div>
+    <input type="text" id="userInput" placeholder="Type a message..." onkeydown="if(event.key === 'Enter') sendMessage()" />
+    <button onclick="sendMessage()">Send</button>
+    <button onclick="clearChat()">Clear Chat</button>
+</body>
+</html>
