@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DeepSeek Chat</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <script defer src="{{ url_for('static', filename='script.js') }}"></script>
+    <link rel="stylesheet" href="../static/styles.css">
+    <script defer src="../static/script.js"></script>
 </head>
 <body>
     <h1>DeepSeek Chat</h1>
@@ -13,5 +13,56 @@
     <input type="text" id="userInput" placeholder="Type a message..." onkeydown="if(event.key === 'Enter') sendMessage()" />
     <button onclick="sendMessage()">Send</button>
     <button onclick="clearChat()">Clear Chat</button>
+
+    <section id="deepseek-r1-7b">
+        <h2>DeepSeek-R1:7B Model Overview</h2>
+        <p>
+            DeepSeek-R1:7B is a state-of-the-art language model designed to perform complex reasoning tasks with high efficiency. This model is part of the DeepSeek-R1 series, which employs a Mixture of Experts (MoE) architecture to balance performance and computational resource requirements.
+        </p>
+    
+        <h3>Model Architecture</h3>
+        <p>
+            The DeepSeek-R1:7B model utilizes a Transformer-based architecture with a decoder-only configuration. This design is optimized for tasks such as text generation and completion, where the model predicts subsequent tokens based on preceding context. The decoder-only setup streamlines the processing pipeline, enhancing efficiency in autoregressive tasks.
+        </p>
+    
+        <h3>Parameter Count and Structure</h3>
+        <p>
+            Comprising 7 billion parameters, DeepSeek-R1:7B is engineered to deliver substantial reasoning capabilities while remaining accessible for deployment on consumer-grade hardware. The model's architecture includes multiple layers of self-attention mechanisms and feed-forward networks, enabling it to capture intricate patterns in data and perform complex computations effectively.
+        </p>
+    
+        <h3>Hardware Requirements</h3>
+        <p>
+            To deploy DeepSeek-R1:7B effectively, the following hardware specifications are recommended:
+        </p>
+        <ul>
+            <li><strong>GPU VRAM:</strong> A minimum of 8 GB of VRAM is required, with 12 GB or more recommended for optimal performance. This ensures that the model can handle extensive computations without memory bottlenecks.</li>
+            <li><strong>System RAM:</strong> At least 16 GB of system RAM is advisable to support the model's operations and manage additional system processes efficiently.</li>
+            <li><strong>Storage:</strong> Approximately 20 GB of free disk space is necessary to accommodate the model files and associated data.</li>
+        </ul>
+    
+        <h3>Deployment Considerations</h3>
+        <p>
+            While DeepSeek-R1:7B is optimized for performance, deploying it on a GPU significantly enhances its efficiency. Utilizing a dedicated GPU, such as an NVIDIA GeForce RTX 4070 Ti, allows the model to leverage parallel processing capabilities, resulting in faster inference times. Although deployment on a CPU is feasible, it may lead to slower performance due to the increased computational load on the processor.
+        </p>
+    
+        <h3>NVIDIA GeForce RTX 4070 Ti Overview</h3>
+        <p>
+            The NVIDIA GeForce RTX 4070 Ti is a high-performance graphics card built on NVIDIA's Ada Lovelace architecture. It offers advanced features and capabilities that make it well-suited for demanding applications, including AI model deployment.
+        </p>
+        <ul>
+            <li><strong>CUDA Cores:</strong> The RTX 4070 Ti is equipped with 7,680 CUDA cores, enabling efficient parallel processing for complex computations.</li>
+            <li><strong>Memory Configuration:</strong> It features 12 GB of GDDR6X video memory, providing ample capacity for handling large models and datasets.</li>
+            <li><strong>Memory Speed:</strong> The memory operates at an effective speed of 21 Gbps, facilitating rapid data transfer between the GPU and memory.</li>
+            <li><strong>Engine Clock:</strong> The card operates at a base clock speed of 2,310 MHz, with boost capabilities up to 2,610 MHz, ensuring high-performance processing.</li>
+            <li><strong>Form Factor:</strong> Designed with a dual-slot configuration, the RTX 4070 Ti balances performance with space efficiency, making it suitable for a variety of system builds.</li>
+        </ul>
+    
+        <h3>Compatibility and Performance</h3>
+        <p>
+            Deploying DeepSeek-R1:7B on a system equipped with the NVIDIA GeForce RTX 4070 Ti ensures optimal performance. The GPU's substantial VRAM and processing power align with the model's requirements, enabling efficient handling of complex reasoning tasks. This combination is ideal for developers and researchers seeking to implement advanced language processing capabilities without necessitating extensive computational resources.
+        </p>
+    </section>
+    
+    
 </body>
 </html>

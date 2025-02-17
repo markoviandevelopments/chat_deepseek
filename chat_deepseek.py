@@ -4,6 +4,10 @@ import ollama
 import json
 import os
 
+os.environ["OLLAMA_ACCELERATOR"] = "cuda"
+
+has_printed_cuda = False
+
 app = Flask(__name__, static_folder='static')
 CORS(app)  # Allow cross-origin requests
 
@@ -29,13 +33,22 @@ def home():
     return render_template('index.html')
 
 @app.route('/chat', methods=['POST'])
+
+@app.route('/chat', methods=['POST'])
 def chat():
+    global has_printed_cuda
     global chat_history
 
     user_input = request.json.get('message', '')
 
     if not user_input:
         return jsonify({"error": "Empty message"}), 400
+
+    # Print CUDA status
+    if not has_printed_cuda:
+        cuda_status = os.environ.get("OLLAMA_ACCELERATOR", "Not set")
+        print(f"🔥 CUDA Status: OLLAMA_ACCELERATOR={cuda_status}")
+        has_printed_cuda = True
 
     # Add user's message immediately
     chat_history.append({"role": "user", "message": user_input})
@@ -52,6 +65,7 @@ def chat():
     save_chat_history()
 
     return jsonify({"response": response, "history": chat_history})
+
 
 @app.route('/history', methods=['GET'])
 def get_history():

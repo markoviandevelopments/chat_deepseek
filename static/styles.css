@@ -1,7 +1,7 @@
 body {
     font-family: Arial, sans-serif;
     text-align: center;
-    background-color: #f5f5f5;
+    background-color: #777777;
     margin: 20px;
 }
 
@@ -10,8 +10,9 @@ body {
     max-width: 800px;
     height: 400px;
     overflow-y: auto;
-    border: 1px solid #ccc;
-    background-color: white;
+    border: 1px solid #FFF;
+    background-color: #000;
+    
     padding: 10px;
     margin: auto;
     text-align: left;
@@ -26,4 +27,8 @@ body {
 button {
     padding: 10px;
     cursor: pointer;
+}
+
+p {
+    color: rgb(34, 228, 34);
 }

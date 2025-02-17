@@ -30,13 +30,28 @@ async function fetchChatHistory() {
 // Update chat messages in the UI
 function updateChat(history) {
     let chatBox = document.getElementById("chatBox");
-    chatBox.innerHTML = "";
+
+    // Save current scroll position
+    let isAtBottom = chatBox.scrollHeight - chatBox.scrollTop === chatBox.clientHeight;
+
+    // Update chat without clearing the existing history
+    let newChatHTML = "";
     history.forEach(entry => {
         let role = entry.role === "user" ? "You" : "DeepSeek";
-        chatBox.innerHTML += `<p><strong>${role}:</strong> ${entry.message.replace(/\n/g, "<br>")}</p>`;
+        newChatHTML += `<p><strong>${role}:</strong> ${entry.message.replace(/\n/g, "<br>")}</p>`;
     });
-    chatBox.scrollTop = chatBox.scrollHeight; // Auto-scroll
+
+    // Only update if the chat content actually changed (avoids unnecessary re-renders)
+    if (chatBox.innerHTML !== newChatHTML) {
+        chatBox.innerHTML = newChatHTML;
+    }
+
+    // Restore scroll position: Stay at the same place unless at the bottom
+    if (isAtBottom) {
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
 }
+
 
 // Clear chat history
 async function clearChat() {
