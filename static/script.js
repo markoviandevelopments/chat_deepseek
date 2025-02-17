@@ -1,3 +1,8 @@
+
+let autoRefresh = true;  // Default state: Auto-refresh is ON
+let refreshInterval = setInterval(fetchChatHistory, 500); // Start interval
+
+
 async function sendMessage() {
     let userInput = document.getElementById("userInput").value.trim();
     if (!userInput) return;
@@ -56,15 +61,27 @@ function updateChat(history) {
     }
 }
 
+// Function to toggle auto-refresh
+async function toggleAutoRefresh() {
+    autoRefresh = !autoRefresh; // Toggle state
+
+    let button = document.getElementById("toggleRefresh");
+
+    if (autoRefresh) {
+        refreshInterval = setInterval(fetchChatHistory, 500); // Resume refreshing
+        button.textContent = "Auto-Refresh: ON";
+    } else {
+        clearInterval(refreshInterval); // Stop refreshing
+        button.textContent = "Auto-Refresh: OFF";
+    }
+}
+
 
 // Clear chat history
 async function clearChat() {
     await fetch('/clear', { method: 'POST' });
     document.getElementById("chatBox").innerHTML = "";
 }
-
-// Auto-refresh chat every 500 ms
-setInterval(fetchChatHistory, 500);
 
 // Load chat history on page load
 window.onload = fetchChatHistory;
