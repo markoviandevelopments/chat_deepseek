@@ -22,3 +22,5 @@ if __name__ == "__main__":
     user_prompt = input("Enter your question: ")
     result = query_api(user_prompt)
     print("\nAnswer:", result)
+    print("\n\n")
+    print(result.find("@["))
