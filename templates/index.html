@@ -8,6 +8,27 @@
     <script defer src="../static/script.js"></script>
 </head>
 <body>
+    <!-- Navigation Bar -->
+    <header class="navigation">
+        <a href="public/index.html" id="home">MARKOVIAN DEVELOPMENTS</a>
+        <button class="hamburger" id="hamburger">
+            <span class="bar">-</span>
+            <span class="bar">-</span>
+            <span class="bar">-</span>
+        </button>
+        <nav id="nav-menu">
+            <ul>
+                <li><a class="space-link track-click" href="public/about.html">About Us</a></li>
+                <li><a class="space-link track-click" href="public/simulations/simulations.html">Simulations</a></li>
+                <li><a class="space-link track-click" href="public/electronics/electronics.html">Electronics</a></li>
+                <li><a class="space-link track-click" href="public/other_projects/other_projects.html">Other
+                        Developments</a>
+                </li>
+                <li><a class="space-link track-click" href="public/contact/contact.html">Contact Us</a></li>
+            </ul>
+        </nav>
+    </header>
+
     <h1 id="title1">DeepSeek Chat</h1>
     <div id="chatBox"></div>
     <input type="text" id="userInput" placeholder="Type a message..." onkeydown="if(event.key === 'Enter') sendMessage()" />
