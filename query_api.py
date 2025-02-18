@@ -1,5 +1,5 @@
 import requests
-import json
+import ast
 
 def query_api(user_prompt):
     url = "http://50.188.120.138:5049/api/deepseek"
@@ -20,14 +20,19 @@ def query_api(user_prompt):
         return f"Error: {e}"
 
 if __name__ == "__main__":
-    user_prompt = input("Enter your question: ")
+    #user_prompt = input("Enter your question: ")
+    user_prompt = 'make a list of 10 numbers, but for machine readability start with "@". So, e.g.: "@[3, 5, ...]. Do not include the "@" symbol before your final list!"'
     result = query_api(user_prompt)
     print("\nAnswer:", result)
     print("\n\n")
     indexx = result.find("@[")
     print(indexx)
     print("\n\n")
-    print(result[indexx:(indexx + 10)])
+    for i in range(2, 100):
+        if (result[indexx + i] == "]"):
+            break
+    
+    print(result[indexx:(i + indexx)])
     print("\n\n")
-    list = json.load("[3, 2]")
+    list = ast.literal_eval("[3, 2]")
     print(list[0])
