@@ -3,9 +3,12 @@ import ast
 import re
 import json
 
-def query_api(user_prompt):
+def query_api(user_prompt, temperature=0.7):
     url = "http://50.188.120.138:5049/api/deepseek"
-    params = {"prompt": user_prompt}
+    params = {
+        "prompt": user_prompt,
+        "temperature": temperature  # Add temperature to the request
+    }
     
     try:
         response = requests.get(url, params=params)
@@ -29,9 +32,11 @@ def query_api(user_prompt):
         return f"Error: {e}"
 
 if __name__ == "__main__":
-    #user_prompt = input("Enter your question: ")
-    user_prompt = 'Please generate a set of 2 dimensional arrays for the use of lighting up some leds. Each array should be IMMEDIATELY preceeded by an "@" symbol and be 10 items long. Such as, for example, "@[[255, 255, 255], [225, 235, 115], ..., [0, 124, 42]]".  Value in each tuple should be between 0 and 255, inclusive. Ten tuples long a piece. Go China!'
-    result = query_api(user_prompt)
+    theme = input("Enter the theme: ")
+    temp = float(input("Enter the temperature (default 0.7): ")) 
+
+    user_prompt = 'Please generate a set of 2 dimensional arrays for the use of lighting up some leds. Make the theme: ' + theme + '. Each array should be IMMEDIATELY preceeded by an "@" symbol and be 10 items long. Such as, for example, "@[[255, 255, 255], [225, 235, 115], ..., [0, 124, 42]]".  Value in each tuple should be between 0 and 255, inclusive. Ten tuples long a piece. Go China!'
+    result = query_api(user_prompt, temperature=temp)
     print("\nAnswer:", result)
     print("\n\n")
     result = result.replace("\n", "").replace(" ", "")

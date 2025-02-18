@@ -14,21 +14,22 @@ def deepseek():
     """Handle GET and POST requests for DeepSeek."""
     
     if request.method == 'POST':
-        # Handle JSON or form data for POST requests
         data = request.get_json(silent=True) or request.form
         prompt = data.get('prompt', '')
+        temperature = float(data.get('temperature', 0.7))  # Default to 0.7 if not provided
     else:
-        # Handle GET requests with URL parameters
         prompt = request.args.get('prompt', '')
+        temperature = float(request.args.get('temperature', 0.7))  # Default to 0.7 if not provided
 
     if not prompt:
         return jsonify({'error': 'No prompt provided'}), 400
 
     try:
-        # Generate response from DeepSeek
+        # Generate response from DeepSeek with temperature adjustment
         response = ollama.generate(
             model=MODEL_NAME,
-            prompt=prompt
+            prompt=prompt,
+            options={"temperature": temperature}  # Set temperature
         )
         return jsonify({'response': response['response']})
 

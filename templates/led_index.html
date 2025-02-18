@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LED Pattern Generator</title>
+    <script>
+        function generatePattern(event) {
+            event.preventDefault();
+            let theme = document.getElementById("theme").value;
+            let temperature = document.getElementById("temperature").value;
+            let resultDiv = document.getElementById("result");
+
+            // Show loading message
+            resultDiv.innerHTML = "<h3>Loading...</h3>";
+
+            fetch("/", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: `theme=${encodeURIComponent(theme)}&temperature=${encodeURIComponent(temperature)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                let statusColor = data.status === "Pass" ? "green" : "red";
+
+                let outputHTML = `
+                    <h3>Generation Result:</h3>
+                    <p><strong>Status:</strong> <span style="color: ${statusColor};">${data.status}</span></p>
+                    <p><strong>Time:</strong> ${data.timestamp}</p>
+                    <h4>Raw API Output:</h4>
+                    <pre>${data.raw_output}</pre>
+                `;
+
+                if (data.led_pattern) {
+                    outputHTML += `<h4>Generated LED Pattern:</h4><pre>${JSON.stringify(data.led_pattern, null, 4)}</pre>`;
+                } else {
+                    outputHTML += `<p><strong>Error:</strong> No valid LED pattern was extracted.</p>`;
+                }
+
+                resultDiv.innerHTML = outputHTML;
+            })
+            .catch(error => {
+                resultDiv.innerHTML = `<h3 style="color: red;">Error:</h3><p>${error}</p>`;
+            });
+        }
+    </script>
+</head>
+<body>
+    <h2>LED Pattern Generator</h2>
+    <form onsubmit="generatePattern(event)">
+        <label for="theme">Enter Theme:</label>
+        <input type="text" id="theme" name="theme" required>
+        <br><br>
+        <label for="temperature">Temperature (0.0 - 1.0):</label>
+        <input type="number" id="temperature" name="temperature" step="0.1" min="0" max="1" value="0.7">
+        <br><br>
+        <button type="submit">Generate LED Pattern</button>
+    </form>
+
+    <div id="result">
+        {% if last_result.status != "No request yet" %}
+            <h3>Last Attempt:</h3>
+            <p><strong>Status:</strong> <span style="color: {{ 'green' if last_result.status == 'Pass' else 'red' }};">{{ last_result.status }}</span></p>
+            <p><strong>Time:</strong> {{ last_result.timestamp }}</p>
+            <h4>Raw API Output:</h4>
+            <pre>{{ last_result.raw_output }}</pre>
+        {% endif %}
+    </div>
+</body>
+</html>
