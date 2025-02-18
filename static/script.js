@@ -32,7 +32,15 @@ async function fetchChatHistory() {
     updateChat(data.history);
 }
 
-// Update chat messages in the UI
+// Configure marked.js to use Highlight.js for code blocks
+marked.setOptions({
+    highlight: function (code, lang) {
+        return lang && hljs.getLanguage(lang)
+            ? hljs.highlight(code, { language: lang }).value
+            : hljs.highlightAuto(code).value;
+    }
+});
+
 function updateChat(history) {
     let chatBox = document.getElementById("chatBox");
 
@@ -43,7 +51,7 @@ function updateChat(history) {
     let newChatHTML = "";
     history.forEach(entry => {
         let role = entry.role === "user" ? "You" : "DeepSeek";
-        let content = entry.message.replace(/\n/g, "<br>"); // Default formatting
+        let content = entry.message.replace(/\n/g, "<br>");
 
         if (role === "DeepSeek") {
             content = marked.parse(entry.message); // Convert Markdown to HTML
@@ -62,6 +70,9 @@ function updateChat(history) {
     // Only update if the chat content actually changed (avoids unnecessary re-renders)
     if (chatBox.innerHTML !== newChatHTML) {
         chatBox.innerHTML = newChatHTML;
+        document.querySelectorAll("pre code").forEach((block) => {
+            hljs.highlightElement(block); // Apply syntax highlighting
+        });
     }
 
     // Restore scroll position: Stay at the same place unless at the bottom
@@ -69,6 +80,7 @@ function updateChat(history) {
         chatBox.scrollTop = chatBox.scrollHeight;
     }
 }
+
 
 // Function to toggle auto-refresh
 async function toggleAutoRefresh() {
