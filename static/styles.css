@@ -64,7 +64,7 @@ button {
     margin-left: 1rem;
 }
 
-#deepseekText {
+.deepseekText {
     border-radius: 15px;
     text-align: left;
     color: red;
