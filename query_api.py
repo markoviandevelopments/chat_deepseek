@@ -1,4 +1,5 @@
 import requests
+import json
 
 def query_api(user_prompt):
     url = "http://50.188.120.138:5049/api/deepseek"
@@ -27,3 +28,6 @@ if __name__ == "__main__":
     print(indexx)
     print("\n\n")
     print(result[indexx:(indexx + 10)])
+    print("\n\n")
+    list = json.load("[3, 2]")
+    print(list[0])
