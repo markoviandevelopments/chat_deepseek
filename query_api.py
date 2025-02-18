@@ -23,4 +23,7 @@ if __name__ == "__main__":
     result = query_api(user_prompt)
     print("\nAnswer:", result)
     print("\n\n")
-    print(result.find("@["))
+    indexx = result.find("@[")
+    print(indexx)
+    print("\n\n")
+    print(result[indexx:(indexx + 10)])
