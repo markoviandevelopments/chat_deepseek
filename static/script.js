@@ -10,7 +10,7 @@ async function sendMessage() {
     let chatBox = document.getElementById("chatBox");
 
     // Immediately show the user's message
-    chatBox.innerHTML += `<p id="role_user"><strong>You:</strong></p><p id="userText">${userInput.replace(/\n/g, "<br>")}</p>`;
+    chatBox.innerHTML += `<p id="role_user"><strong>You:</strong></p><p id="userText> ${userInput.replace(/\n/g, "<br>")}</p>`;
     chatBox.scrollTop = chatBox.scrollHeight; // Auto-scroll to bottom
     document.getElementById("userInput").value = ""; // Clear input
 
@@ -43,13 +43,18 @@ function updateChat(history) {
     let newChatHTML = "";
     history.forEach(entry => {
         let role = entry.role === "user" ? "You" : "DeepSeek";
-        let formattedMessage = marked.parse(entry.message); // Convert Markdown to HTML
+        let content = entry.message.replace(/\n/g, "<br>"); // Default formatting
 
-        if (role === "You") {
-            newChatHTML += `<p id="role_user"><u><strong>${role}:</strong></u></p><p id="userText">${formattedMessage}</p>`;
-        } else {
-            newChatHTML += `<p id="role_deepseek"><u><strong>${role}:</strong></u></p><p id="deepseekText">${formattedMessage}</p>`;
+        if (role === "DeepSeek") {
+            content = marked.parse(entry.message); // Convert Markdown to HTML
         }
+
+        newChatHTML += `
+            <p class="${role === 'You' ? 'role_user' : 'role_deepseek'}">
+                <u><strong>${role}:</strong></u>
+            </p>
+            <div class="${role === 'You' ? 'userText' : 'deepseekText'}">${content}</div>
+        `;
     });
 
     // Only update if the chat content actually changed (avoids unnecessary re-renders)
