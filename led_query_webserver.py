@@ -22,7 +22,7 @@ def query_api(user_prompt, temperature=0.7):
         data = response.json()
 
         answer = data.get("response", "").strip()
-        answer = re.sub(r"<think>.*?</think>", "", answer, flags=re.DOTALL).strip()
+        
 
         return answer if answer else "No response received."
     
@@ -45,6 +45,8 @@ def index():
         )
 
         result = query_api(user_prompt, temperature=temp)
+        raw_result = result
+        result = re.sub(r"<think>.*?</think>", "", answer, flags=re.DOTALL).strip()
         result_cleaned = result.replace("\n", "").replace(" ", "")
 
         indexx = result_cleaned.find("@[")
@@ -73,7 +75,7 @@ def index():
             "led_pattern": led_pattern if status == "Pass" else None,
             "status": status,
             "timestamp": timestamp,
-            "raw_output": result
+            "raw_output": raw_result
         })
 
     return render_template("led_index.html", last_result=LAST_RESULT)
