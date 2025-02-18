@@ -45,12 +45,17 @@ function updateChat(history) {
         let role = entry.role === "user" ? "You" : "DeepSeek";
         let content = entry.message.replace(/\n/g, "<br>"); // Default formatting
 
-        if (role == "DeepSeek") {
+        if (role === "DeepSeek") {
             content = marked.parse(entry.message); // Convert Markdown to HTML
-            newChatHTML += `<p id="role_deepseek"><u><strong>${role}:</strong></u></p><p id="deepseekText"> ${content}</p>`;
-        }
-        else {
-            newChatHTML += `<p id="role_user"><u><strong>${role}:</strong></u></p><p id="userText"> ${content}</p>`;
+            newChatHTML += `
+                <p class="role_deepseek"><u><strong>${role}:</strong></u></p>
+                <div class="deepseekText">${content}</div>
+            `;
+        } else {
+            newChatHTML += `
+                <p class="role_user"><u><strong>${role}:</strong></u></p>
+                <div class="userText">${content}</div>
+            `;
         }
     });
 
