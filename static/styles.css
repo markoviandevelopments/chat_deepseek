@@ -48,28 +48,24 @@ button {
 
 #role_user {
     background-color: none;
-    border-radius: 5px;
-    text-align: center;
     color: whitesmoke;
 }
 
 #role_deepseek {
     background-color: none;
-    border-radius: 15px;
-    text-align: center;
-    color: whitesmoke;
+    color: red;
 }
 
 #userText {
-    background-color: greenyellow;
     border-radius: 5px;
-    text-align: right;
-    color: black;
+    text-align: left;
+    color: whitesmoke;
+    margin-left: 1rem;
 }
 
 #deepseekText {
-    background-color: hotpink;
     border-radius: 15px;
     text-align: left;
-    color: black;
+    color: red;
+    margin-left: 1rem;
 }
