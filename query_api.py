@@ -1,6 +1,7 @@
 import requests
 import ast
 import re
+import json
 
 def query_api(user_prompt):
     url = "http://50.188.120.138:5049/api/deepseek"
@@ -46,4 +47,13 @@ if __name__ == "__main__":
     print(list_str)
     print("\n\n")
     list = ast.literal_eval(list_str)
-    print(list[0])
+
+    passed = False
+    if (len(list) == 10 and len(list[0]) == 3):
+        passed = True
+    
+    print(passed)
+    if passed:
+        with open("led_pattern.json", "w") as json_file:
+            json.dump(list, json_file, indent=4)
+        print("LED pattern saved to led_pattern.json")
