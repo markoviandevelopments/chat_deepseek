@@ -4,15 +4,14 @@ body {
     font-family: Roboto Mono, monospace;
     text-align: center;
     background-color: #2b2b2b;
-    margin: 20px;
+    margin: 30px;
 }
 
 #chatBox {
     width: 90%;
     height: 600px;
     overflow-y: auto;
-    border: 1px solid #FFF;
-    background-color: #111;
+    background-color: none;
     font-family: 'Ubuntu Mono', monospace;
     
     padding: 10px;
@@ -24,6 +23,9 @@ body {
     width: 70%;
     padding: 10px;
     margin-top: 10px;
+    border-radius: 3px;
+    background-color: none;
+    border: 1px black solid;
 }
 
 button {
@@ -45,17 +47,17 @@ button {
 }
 
 #role_user {
-    color: #00F;
+    color: green;
 }
 
 #role_deepseek {
-    color: #F00;
+    color: hotpink;
 }
 
 #userText {
-    color: #66F;
+    color: greenyellow;
 }
 
 #deepseekText {
-    color: #F66;
+    color: lightpink;
 }

@@ -44,9 +44,9 @@ function updateChat(history) {
     history.forEach(entry => {
         let role = entry.role === "user" ? "You" : "DeepSeek";
         if (role=="You") {
-            newChatHTML += `<p id="role_user"><strong>${role}:</strong></p><p id="userText"> ${entry.message.replace(/\n/g, "<br>")}</p>`;
+            newChatHTML += `<p id="role_user"><b><ul><strong>${role}:</strong></b></ul></p><p id="userText"> ${entry.message.replace(/\n/g, "<br>")}</p>`;
         } else{
-            newChatHTML += `<p id="role_deepseek"><strong>${role}:</strong></p><p id="deepseekText"> ${entry.message.replace(/\n/g, "<br>")}</p>`;
+            newChatHTML += `<p id="role_deepseek"><b><ul><strong>${role}:</strong></b></ul></p><p id="deepseekText"> ${entry.message.replace(/\n/g, "<br>")}</p>`;
         }
     });
 
