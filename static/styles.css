@@ -9,7 +9,7 @@ body {
 
 #chatBox {
     width: 90%;
-    height: 60%;
+    height: 600px;
     overflow-y: auto;
     border: 1px solid #FFF;
     background-color: #111;
