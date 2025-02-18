@@ -51,7 +51,10 @@ button {
 }
 
 #role_deepseek {
-    color: hotpink;
+    background-color: hotpink;
+    border-radius: 5px;
+    text-align: right;
+    color: black;
 }
 
 #userText {
@@ -59,5 +62,8 @@ button {
 }
 
 #deepseekText {
-    color: lightpink;
+    background-color: hotpink;
+    border-radius: 5px;
+    text-align: right;
+    color: black;
 }
