@@ -46,7 +46,7 @@ function updateChat(history) {
         let content = entry.message.replace(/\n/g, "<br>"); // Default formatting
 
         if (role === "DeepSeek") {
-            content = marked.parse(entry.message); // Convert Markdown to HTML
+            content = marked(entry.message); // Corrected markdown parsing
         }
 
         newChatHTML += `
@@ -67,6 +67,7 @@ function updateChat(history) {
         chatBox.scrollTop = chatBox.scrollHeight;
     }
 }
+
 
 // Function to toggle auto-refresh
 async function toggleAutoRefresh() {
