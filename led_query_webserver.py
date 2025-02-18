@@ -46,7 +46,7 @@ def index():
 
         result = query_api(user_prompt, temperature=temp)
         raw_result = result
-        result = re.sub(r"<think>.*?</think>", "", answer, flags=re.DOTALL).strip()
+        result = re.sub(r"<think>.*?</think>", "", result, flags=re.DOTALL).strip()
         result_cleaned = result.replace("\n", "").replace(" ", "")
 
         indexx = result_cleaned.find("@[")
