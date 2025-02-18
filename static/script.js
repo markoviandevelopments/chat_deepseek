@@ -38,8 +38,10 @@ marked.setOptions({
         return lang && hljs.getLanguage(lang)
             ? hljs.highlight(code, { language: lang }).value
             : hljs.highlightAuto(code).value;
-    }
+    },
+    breaks: true  // Ensures line breaks are preserved
 });
+
 
 function updateChat(history) {
     let chatBox = document.getElementById("chatBox");
@@ -47,14 +49,12 @@ function updateChat(history) {
     // Save current scroll position
     let isAtBottom = chatBox.scrollHeight - chatBox.scrollTop === chatBox.clientHeight;
 
-    // Update chat without clearing the existing history
     let newChatHTML = "";
     history.forEach(entry => {
         let role = entry.role === "user" ? "You" : "DeepSeek";
-        let content = entry.message.replace(/\n/g, "<br>");
+        let content = marked.parse(entry.message); // Convert Markdown to HTML
 
         if (role === "DeepSeek") {
-            content = marked.parse(entry.message); // Convert Markdown to HTML
             newChatHTML += `
                 <p class="role_deepseek"><u><strong>${role}:</strong></u></p>
                 <div class="deepseekText">${content}</div>
@@ -67,19 +67,22 @@ function updateChat(history) {
         }
     });
 
-    // Only update if the chat content actually changed (avoids unnecessary re-renders)
+    // Update chatBox content only if there's a change (prevents unnecessary redraws)
     if (chatBox.innerHTML !== newChatHTML) {
         chatBox.innerHTML = newChatHTML;
+
+        // Ensure highlight.js is applied to new code blocks
         document.querySelectorAll("pre code").forEach((block) => {
-            hljs.highlightElement(block); // Apply syntax highlighting
+            hljs.highlightElement(block);
         });
     }
 
-    // Restore scroll position: Stay at the same place unless at the bottom
+    // Restore scroll position
     if (isAtBottom) {
         chatBox.scrollTop = chatBox.scrollHeight;
     }
 }
+
 
 
 // Function to toggle auto-refresh
