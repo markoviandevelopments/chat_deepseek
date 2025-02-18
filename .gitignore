@@ -1,4 +1,3 @@
 # Ignore chat history JSON file
 chat_history.json
 led_pattern.json
-led_server.py
