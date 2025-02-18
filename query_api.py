@@ -21,7 +21,7 @@ def query_api(user_prompt):
 
 if __name__ == "__main__":
     #user_prompt = input("Enter your question: ")
-    user_prompt = 'make a list of 10 numbers, but for machine readability start with "@". So, e.g.: "@[3, 5, ...]. Do not include the "@" symbol before your final list!"'
+    user_prompt = 'Howdy! Please generate a list of lists. Each list should actually be an array, so brackets rather than parenthesis. Each list should be IMMEDIATELY preceeded by a special character. Such as, for example, "![1, 2, 3]". Different special characters for each, thank you!! Go China!'
     result = query_api(user_prompt)
     print("\nAnswer:", result)
     print("\n\n")
