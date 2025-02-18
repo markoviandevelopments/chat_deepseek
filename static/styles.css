@@ -47,17 +47,17 @@ button {
     color: #FFF;
 }
 
-#role_user {
+.role_user {
     background-color: none;
     color: whitesmoke;
 }
 
-#role_deepseek {
+.role_deepseek {
     background-color: none;
     color: red;
 }
 
-#userText {
+.userText {
     border-radius: 5px;
     text-align: left;
     color: whitesmoke;
