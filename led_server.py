@@ -3,6 +3,11 @@ import json
 import threading
 import time
 
+'''
+Note that this program is a subset of what led_query_webserver does
+'''
+
+
 app = Flask(__name__)
 
 # Global variable to store the LED pattern
