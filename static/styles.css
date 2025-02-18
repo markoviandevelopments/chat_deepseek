@@ -83,6 +83,8 @@ button {
 }
 
 .deepseekText pre code {
+    color: #fff;
+    /* Ensure code text is visible */
     font-family: 'Ubuntu Mono', monospace;
     font-size: 14px;
     display: block;
