@@ -64,11 +64,31 @@ button {
     margin-left: 1rem;
 }
 
+/* Style for the DeepSeek response text */
 .deepseekText {
     border-radius: 15px;
     text-align: left;
     color: red;
+    /* This might get overridden inside code blocks */
     margin-left: 1rem;
+}
+
+/* Ensure code blocks inside deepseekText are styled properly */
+.deepseekText pre {
+    background-color: #1e1e1e;
+    /* Dark theme background */
+    padding: 10px;
+    border-radius: 8px;
+    overflow-x: auto;
+}
+
+.deepseekText pre code {
+    color: #fff;
+    /* Ensure code text is visible */
+    font-family: 'Ubuntu Mono', monospace;
+    font-size: 14px;
+    display: block;
+    overflow-x: auto;
 }
 
 @media (max-width: 768px) {
