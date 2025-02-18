@@ -47,20 +47,10 @@ function updateChat(history) {
 
         if (role == "DeepSeek") {
             content = marked.parse(entry.message); // Convert Markdown to HTML
-        }
-
-    //     newChatHTML += `
-    //         <p class="${role === 'You' ? 'role_user' : 'role_deepseek'}">
-    //             <u><strong>${role}:</strong></u>
-    //         </p>
-    //         <div class="${role === 'You' ? 'userText' : 'deepseekText'}">${content}</div>
-    //     `;
-    // });
-
-        if (role=="You") {
-            newChatHTML += `<p id="role_user"><u><strong>${role}:</strong></u></p><p id="userText"> ${content}</p>`;
-        } else{
             newChatHTML += `<p id="role_deepseek"><u><strong>${role}:</strong></u></p><p id="deepseekText"> ${content}</p>`;
+        }
+        else {
+            newChatHTML += `<p id="role_user"><u><strong>${role}:</strong></u></p><p id="userText"> ${content}</p>`;
         }
     });
 
