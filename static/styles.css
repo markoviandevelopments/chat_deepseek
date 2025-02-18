@@ -47,23 +47,29 @@ button {
 }
 
 #role_user {
-    color: green;
+    background-color: none;
+    border-radius: 5px;
+    text-align: center;
+    color: whitesmoke;
 }
 
 #role_deepseek {
-    background-color: hotpink;
+    background-color: none;
+    border-radius: 15px;
+    text-align: center;
+    color: whitesmoke;
+}
+
+#userText {
+    background-color: greenyellow;
     border-radius: 5px;
     text-align: right;
     color: black;
 }
 
-#userText {
-    color: greenyellow;
-}
-
 #deepseekText {
     background-color: hotpink;
-    border-radius: 5px;
-    text-align: right;
+    border-radius: 15px;
+    text-align: left;
     color: black;
 }
