@@ -47,7 +47,51 @@ button {
     color: #FFF;
 }
 
-/* Wrap code blocks inside a container */
+.role_user {
+    color: whitesmoke;
+}
+
+.userText {
+    background-color: rgba(72, 136, 255, 0.205);
+    border-radius: 20px;
+    text-align: left;
+    color: whitesmoke;
+    margin-left: 1rem;
+    padding: 20px;
+    width: 80%;
+}
+
+.role_deepseek {
+    background-color: none;
+    color: whitesmoke;
+}
+
+/* Style for the DeepSeek response text */
+.deepseekText {
+    border-radius: 15px;
+    text-align: left;
+    color: whitesmoke;
+    margin-left: 1rem;
+}
+
+.deepseekText pre {
+    background-color: #1e1e1e;
+    padding: 10px;
+    border-radius: 8px;
+    overflow-x: auto;
+    width: 50%;
+    justify-content: center;
+}
+
+.deepseekText pre code {
+    color: #fff;
+    font-family: 'Ubuntu Mono', monospace;
+    font-size: 14px;
+    display: block;
+    overflow-x: auto;
+}
+
+/* Code block container for proper layout */
 .code-container {
     position: relative;
     display: inline-block;
@@ -60,7 +104,7 @@ button {
     top: 5px;
     right: 5px;
     background: rgba(255, 255, 255, 0.1);
-    color: white;
+    color: #fff;
     border: none;
     padding: 5px 8px;
     font-size: 12px;
@@ -72,49 +116,6 @@ button {
 /* Button Hover Effect */
 .copy-button:hover {
     background: rgba(255, 255, 255, 0.3);
-}
-
-/* Ensure the code block has some spacing */
-.code-container pre {
-    padding: 10px;
-    border-radius: 8px;
-    overflow-x: auto;
-}
-
-/* User messages styling */
-.userText {
-    background-color: rgba(72, 136, 255, 0.205);
-    border-radius: 20px;
-    text-align: left;
-    color: whitesmoke;
-    margin-left: 1rem;
-    padding: 20px;
-    width: 80%;
-}
-
-/* DeepSeek messages styling */
-.deepseekText {
-    border-radius: 15px;
-    text-align: left;
-    color: whitesmoke;
-    margin-left: 1rem;
-}
-
-/* Fix code block coloring */
-.deepseekText pre {
-    background-color: #1e1e1e;
-    padding: 10px;
-    border-radius: 8px;
-    overflow-x: auto;
-    width: 90%;
-}
-
-.deepseekText pre code {
-    color: #fff;
-    font-family: 'Ubuntu Mono', monospace;
-    font-size: 14px;
-    display: block;
-    overflow-x: auto;
 }
 
 @media (max-width: 768px) {
