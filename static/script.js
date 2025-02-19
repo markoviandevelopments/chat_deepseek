@@ -1,15 +1,7 @@
+let autoRefresh = true;
+let refreshInterval = setInterval(fetchChatHistory, 500);
 
-let autoRefresh = true;  // Default state: Auto-refresh is ON
-let refreshInterval = setInterval(fetchChatHistory, 500); // Start interval
-
-// Fetch chat history every 3 seconds
-async function fetchChatHistory() {
-    let response = await fetch('/history');
-    let data = await response.json();
-    updateChat(data.history);
-}
-
-// Configure Marked.js and Highlight.js for better rendering
+// Configure Marked.js and Highlight.js
 marked.setOptions({
     highlight: function (code, lang) {
         return lang && hljs.getLanguage(lang)
@@ -66,12 +58,10 @@ function updateChat(history) {
         let role = entry.role === "user" ? "You" : "DeepSeek";
         let content = entry.message;
 
-        // Only parse Markdown if the message is from DeepSeek
         if (role === "DeepSeek") {
             content = marked.parse(content);
         } else {
-            // Ensure user text doesn't get converted
-            content = content.replace(/\n/g, "<br>");
+            content = content.replace(/\n/g, "<br>"); // Ensure line breaks for user messages
         }
 
         newChatHTML += `
