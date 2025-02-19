@@ -42,6 +42,17 @@ marked.setOptions({
     breaks: true  // Ensures line breaks are preserved
 });
 
+function copyCode(button) {
+    let codeBlock = button.nextElementSibling.querySelector("code");
+    let text = codeBlock.innerText;
+
+    navigator.clipboard.writeText(text).then(() => {
+        button.textContent = "Copied!";
+        setTimeout(() => (button.textContent = "Copy"), 1500);
+    }).catch(err => {
+        console.error("Error copying text: ", err);
+    });
+}
 
 function updateChat(history) {
     let chatBox = document.getElementById("chatBox");
@@ -55,6 +66,17 @@ function updateChat(history) {
         let content = marked.parse(entry.message); // Convert Markdown to HTML
 
         if (role === "DeepSeek") {
+            // Wrap code blocks with a div for styling and copy button
+            content = content.replace(
+                /<pre><code([\s\S]*?)>([\s\S]*?)<\/code><\/pre>/g,
+                (match, lang, code) => `
+                    <div class="code-container">
+                        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                        <pre><code${lang}>${code}</code></pre>
+                    </div>
+                `
+            );
+
             newChatHTML += `
                 <p class="role_deepseek"><u><strong>${role}:</strong></u></p>
                 <div class="deepseekText">${content}</div>
@@ -67,11 +89,11 @@ function updateChat(history) {
         }
     });
 
-    // Update chatBox content only if there's a change (prevents unnecessary redraws)
+    // Only update if the chat content actually changed
     if (chatBox.innerHTML !== newChatHTML) {
         chatBox.innerHTML = newChatHTML;
 
-        // Ensure highlight.js is applied to new code blocks
+        // Apply syntax highlighting to all new code blocks
         document.querySelectorAll("pre code").forEach((block) => {
             hljs.highlightElement(block);
         });
@@ -82,8 +104,6 @@ function updateChat(history) {
         chatBox.scrollTop = chatBox.scrollHeight;
     }
 }
-
-
 
 // Function to toggle auto-refresh
 async function toggleAutoRefresh() {

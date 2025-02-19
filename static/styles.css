@@ -91,6 +91,33 @@ button {
     overflow-x: auto;
 }
 
+/* Code block container for proper layout */
+.code-container {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+/* Style the Copy Button */
+.copy-button {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border: none;
+    padding: 5px 8px;
+    font-size: 12px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background 0.3s ease;
+}
+
+/* Button Hover Effect */
+.copy-button:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
 @media (max-width: 768px) {
 
     /* Make the toggler icon lighter */
