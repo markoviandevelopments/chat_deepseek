@@ -48,35 +48,32 @@ button {
 }
 
 .role_user {
-    background-color: none;
-    color: #00ffff;
+    color: whitesmoke;
 }
 
 .userText {
-    border-radius: 5px;
+    background-color: rgba(0, 0, 0, 0.222);
+    border-radius: 20px;
     text-align: left;
-    color: #00ffff;
+    color: whitesmoke;
     margin-left: 1rem;
 }
 
 .role_deepseek {
     background-color: none;
-    color: #ff4500;
+    color: whitesmoke;
 }
 
 /* Style for the DeepSeek response text */
 .deepseekText {
     border-radius: 15px;
     text-align: left;
-    color: #ff4500;
-    /* This might get overridden inside code blocks */
+    color: whitesmoke;
     margin-left: 1rem;
 }
 
-/* Ensure code blocks inside deepseekText are styled properly */
 .deepseekText pre {
     background-color: #1e1e1e;
-    /* Dark theme background */
     padding: 10px;
     border-radius: 8px;
     overflow-x: auto;
@@ -84,7 +81,6 @@ button {
 
 .deepseekText pre code {
     color: #fff;
-    /* Ensure code text is visible */
     font-family: 'Ubuntu Mono', monospace;
     font-size: 14px;
     display: block;
