@@ -38,12 +38,12 @@ def index():
         temp = float(request.form.get("temperature", 0.7))
 
         user_prompt = (
-            f'Please generate an array for me to use to light up my individually addressable led strip in accordance 
-            with the following theme: {theme}. The array should be formatted as follows, notice the nested rgb value tuples 
-            as well as the "@" symbol. For use with WS2812B leds. They are RGB, not GRB. Keep that in mind alongside the 
-            theme ({theme}), which should be weighted heavily. Example formatting (of course, the variables should be 
-            filled in with actual values that bare no corolation to those presented here in your response): 
-            @[[n, i, c], [b, f, g], ..., [w, b, b]]. There should be 100 tuples in your list. Thank you!'
+            f'Please generate an array for me to use to light up my individually addressable led strip in accordance '
+            f'with the following theme: {theme}. The array should be formatted as follows, notice the nested rgb value tuples '
+            f'as well as the "@" symbol. For use with WS2812B leds. They are RGB, not GRB. Keep that in mind alongside the '
+            f'theme ({theme}), which should be weighted heavily. Example formatting (of course, the variables should be '
+            f'filled in with actual values that bare no corolation to those presented here in your response): '
+            f'@[[n, i, c], [b, f, g], ..., [w, b, b]]. There should be 100 tuples in your list. Thank you!'
         )
 
         result = query_api(user_prompt, temperature=temp)
