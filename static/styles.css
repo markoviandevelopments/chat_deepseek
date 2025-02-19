@@ -91,7 +91,7 @@ button {
     overflow-x: auto;
 }
 
-/* Code block container for proper layout */
+/* Wrap code blocks inside a container */
 .code-container {
     position: relative;
     display: inline-block;
@@ -101,10 +101,10 @@ button {
 /* Style the Copy Button */
 .copy-button {
     position: absolute;
-    top: 5px;
-    right: 5px;
+    top: 8px;
+    right: 8px;
     background: rgba(255, 255, 255, 0.1);
-    color: #fff;
+    color: white;
     border: none;
     padding: 5px 8px;
     font-size: 12px;
@@ -116,6 +116,13 @@ button {
 /* Button Hover Effect */
 .copy-button:hover {
     background: rgba(255, 255, 255, 0.3);
+}
+
+/* Ensure the code block has some spacing */
+.code-container pre {
+    padding: 10px;
+    border-radius: 8px;
+    overflow-x: auto;
 }
 
 @media (max-width: 768px) {
