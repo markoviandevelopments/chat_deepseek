@@ -42,7 +42,7 @@ def index():
             f' following theme: {theme}. It should use brackets rather than parenthesis, and the values must '
             f'be between 0-255 (inclusive), The entire array should be preceded by an @ symbol (not each individual tuple) so that I may parse it. '
             f'Remember, the colors should aesthetically embody the theme ({theme}), which should be weighted heavily.'
-            f'It is critical that there are exactly 10 rgb tuples and that the formating is correct. Thank you. The entire set of 10 tuples need also be nested in a set of brackets.'
+            f'It is critical that there are exactly 10 rgb tuples and that the formating is correct. Thank you. The entire set of 10 tuples need also be nested in a set of brackets. Absolutely NO COMMENTS.'
         )
 
         result = query_api(user_prompt, temperature=temp)
