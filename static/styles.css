@@ -52,7 +52,7 @@ button {
 }
 
 .userText {
-    background-color: rgba(72, 136, 255, 0.42);
+    background-color: rgba(72, 136, 255, 0.205);
     border-radius: 20px;
     text-align: left;
     color: whitesmoke;
@@ -80,7 +80,7 @@ button {
     border-radius: 8px;
     overflow-x: auto;
     width: 50%;
-    align-items: center;
+    justify-content: center;
 }
 
 .deepseekText pre code {
