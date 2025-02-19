@@ -2,29 +2,6 @@
 let autoRefresh = true;  // Default state: Auto-refresh is ON
 let refreshInterval = setInterval(fetchChatHistory, 500); // Start interval
 
-
-async function sendMessage() {
-    let userInput = document.getElementById("userInput").value.trim();
-    if (!userInput) return;
-
-    let chatBox = document.getElementById("chatBox");
-
-    // Immediately show the user's message
-    chatBox.innerHTML += `<p id="role_user"><strong>You:</strong></p><p id="userText> ${userInput.replace(/\n/g, "<br>")}</p>`;
-    chatBox.scrollTop = chatBox.scrollHeight; // Auto-scroll to bottom
-    document.getElementById("userInput").value = ""; // Clear input
-
-    // Send request to the server
-    let response = await fetch('/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: userInput })
-    });
-
-    let data = await response.json();
-    updateChat(data.history);
-}
-
 // Fetch chat history every 3 seconds
 async function fetchChatHistory() {
     let response = await fetch('/history');
@@ -32,17 +9,17 @@ async function fetchChatHistory() {
     updateChat(data.history);
 }
 
+// Configure Marked.js and Highlight.js for better rendering
 marked.setOptions({
     highlight: function (code, lang) {
         return lang && hljs.getLanguage(lang)
             ? hljs.highlight(code, { language: lang }).value
             : hljs.highlightAuto(code).value;
     },
-    breaks: true,
-    renderer: new marked.Renderer()
+    breaks: true
 });
 
-// Modify marked's `code` renderer to insert the "Copy" button
+// Modify Marked's `code` renderer to add a copy button
 const renderer = new marked.Renderer();
 
 renderer.code = function (code, language) {
@@ -55,10 +32,10 @@ renderer.code = function (code, language) {
     `;
 };
 
-// Apply the new renderer to `marked`
+// Apply the new renderer to Marked
 marked.setOptions({ renderer });
 
-
+// Function to Copy Code Blocks
 function copyCode(button) {
     let codeBlock = button.nextElementSibling.querySelector("code");
 
@@ -67,7 +44,6 @@ function copyCode(button) {
         return;
     }
 
-    // Decode HTML entities (so copied text is correct)
     let text = codeBlock.innerText;
 
     navigator.clipboard.writeText(text).then(() => {
@@ -78,7 +54,7 @@ function copyCode(button) {
     });
 }
 
-
+// Function to Update Chat with Messages
 function updateChat(history) {
     let chatBox = document.getElementById("chatBox");
 
@@ -88,33 +64,23 @@ function updateChat(history) {
     let newChatHTML = "";
     history.forEach(entry => {
         let role = entry.role === "user" ? "You" : "DeepSeek";
-        let content = marked.parse(entry.message); // Convert Markdown to HTML
+        let content = entry.message;
 
+        // Only parse Markdown if the message is from DeepSeek
         if (role === "DeepSeek") {
-            // Wrap code blocks with a div for styling and copy button
-            content = content.replace(
-                /<pre><code([\s\S]*?)>([\s\S]*?)<\/code><\/pre>/g,
-                (match, lang, code) => `
-                    <div class="code-container">
-                        <button class="copy-button" onclick="copyCode(this)">Copy</button>
-                        <pre><code${lang}>${code}</code></pre>
-                    </div>
-                `
-            );
-
-            newChatHTML += `
-                <p class="role_deepseek"><u><strong>${role}:</strong></u></p>
-                <div class="deepseekText">${content}</div>
-            `;
+            content = marked.parse(content);
         } else {
-            newChatHTML += `
-                <p class="role_user"><u><strong>${role}:</strong></u></p>
-                <div class="userText">${content}</div>
-            `;
+            // Ensure user text doesn't get converted
+            content = content.replace(/\n/g, "<br>");
         }
+
+        newChatHTML += `
+            <p class="${role === "You" ? "role_user" : "role_deepseek"}"><u><strong>${role}:</strong></u></p>
+            <div class="${role === "You" ? "userText" : "deepseekText"}">${content}</div>
+        `;
     });
 
-    // Only update if the chat content actually changed
+    // Only update the chatbox if the content actually changed
     if (chatBox.innerHTML !== newChatHTML) {
         chatBox.innerHTML = newChatHTML;
 
@@ -130,23 +96,52 @@ function updateChat(history) {
     }
 }
 
-// Function to toggle auto-refresh
+// Fetch chat history
+async function fetchChatHistory() {
+    let response = await fetch('/history');
+    let data = await response.json();
+    updateChat(data.history);
+}
+
+// Send User Message
+async function sendMessage() {
+    let userInput = document.getElementById("userInput").value.trim();
+    if (!userInput) return;
+
+    let chatBox = document.getElementById("chatBox");
+
+    // Show the user's message immediately
+    chatBox.innerHTML += `<p class="role_user"><strong>You:</strong></p><p class="userText">${userInput.replace(/\n/g, "<br>")}</p>`;
+    chatBox.scrollTop = chatBox.scrollHeight;
+    document.getElementById("userInput").value = ""; // Clear input field
+
+    // Send request to the server
+    let response = await fetch('/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: userInput })
+    });
+
+    let data = await response.json();
+    updateChat(data.history);
+}
+
+// Function to Toggle Auto-Refresh
 async function toggleAutoRefresh() {
-    autoRefresh = !autoRefresh; // Toggle state
+    autoRefresh = !autoRefresh;
 
     let button = document.getElementById("toggleRefresh");
 
     if (autoRefresh) {
-        refreshInterval = setInterval(fetchChatHistory, 500); // Resume refreshing
+        refreshInterval = setInterval(fetchChatHistory, 500);
         button.textContent = "Auto-Refresh: ON";
     } else {
-        clearInterval(refreshInterval); // Stop refreshing
+        clearInterval(refreshInterval);
         button.textContent = "Auto-Refresh: OFF";
     }
 }
 
-
-// Clear chat history
+// Clear Chat History
 async function clearChat() {
     await fetch('/clear', { method: 'POST' });
     document.getElementById("chatBox").innerHTML = "";

@@ -51,44 +51,9 @@ button {
     color: whitesmoke;
 }
 
-.userText {
-    background-color: rgba(72, 136, 255, 0.205);
-    border-radius: 20px;
-    text-align: left;
-    color: whitesmoke;
-    margin-left: 1rem;
-    padding: 20px;
-    width: 80%;
-}
-
 .role_deepseek {
     background-color: none;
     color: whitesmoke;
-}
-
-/* Style for the DeepSeek response text */
-.deepseekText {
-    border-radius: 15px;
-    text-align: left;
-    color: whitesmoke;
-    margin-left: 1rem;
-}
-
-.deepseekText pre {
-    background-color: #1e1e1e;
-    padding: 10px;
-    border-radius: 8px;
-    overflow-x: auto;
-    width: 50%;
-    justify-content: center;
-}
-
-.deepseekText pre code {
-    color: #fff;
-    font-family: 'Ubuntu Mono', monospace;
-    font-size: 14px;
-    display: block;
-    overflow-x: auto;
 }
 
 /* Wrap code blocks inside a container */
@@ -101,8 +66,8 @@ button {
 /* Style the Copy Button */
 .copy-button {
     position: absolute;
-    top: 8px;
-    right: 8px;
+    top: 5px;
+    right: 5px;
     background: rgba(255, 255, 255, 0.1);
     color: white;
     border: none;
@@ -122,6 +87,42 @@ button {
 .code-container pre {
     padding: 10px;
     border-radius: 8px;
+    overflow-x: auto;
+}
+
+/* User messages styling */
+.userText {
+    background-color: rgba(72, 136, 255, 0.205);
+    border-radius: 20px;
+    text-align: left;
+    color: whitesmoke;
+    margin-left: 1rem;
+    padding: 20px;
+    width: 80%;
+}
+
+/* DeepSeek messages styling */
+.deepseekText {
+    border-radius: 15px;
+    text-align: left;
+    color: whitesmoke;
+    margin-left: 1rem;
+}
+
+/* Fix code block coloring */
+.deepseekText pre {
+    background-color: #1e1e1e;
+    padding: 10px;
+    border-radius: 8px;
+    overflow-x: auto;
+    width: 90%;
+}
+
+.deepseekText pre code {
+    color: #fff;
+    font-family: 'Ubuntu Mono', monospace;
+    font-size: 14px;
+    display: block;
     overflow-x: auto;
 }
 
