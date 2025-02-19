@@ -32,32 +32,15 @@ async function fetchChatHistory() {
     updateChat(data.history);
 }
 
+// Configure marked.js to use Highlight.js for code blocks
 marked.setOptions({
     highlight: function (code, lang) {
         return lang && hljs.getLanguage(lang)
             ? hljs.highlight(code, { language: lang }).value
             : hljs.highlightAuto(code).value;
     },
-    breaks: true,
-    renderer: new marked.Renderer()
+    breaks: true  // Ensures line breaks are preserved
 });
-
-// Modify marked's `code` renderer to insert the "Copy" button
-const renderer = new marked.Renderer();
-
-renderer.code = function (code, language) {
-    const validLang = hljs.getLanguage(language) ? language : "plaintext";
-    return `
-        <div class="code-container">
-            <button class="copy-button" onclick="copyCode(this)">Copy</button>
-            <pre><code class="language-${validLang}">${hljs.highlight(code, { language: validLang }).value}</code></pre>
-        </div>
-    `;
-};
-
-// Apply the new renderer to `marked`
-marked.setOptions({ renderer });
-
 
 function copyCode(button) {
     let codeBlock = button.nextElementSibling.querySelector("code");
