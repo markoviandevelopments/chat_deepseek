@@ -47,15 +47,6 @@ button {
     color: #FFF;
 }
 
-.role_user {
-    color: whitesmoke;
-}
-
-.role_deepseek {
-    background-color: none;
-    color: whitesmoke;
-}
-
 /* Wrap code blocks inside a container */
 .code-container {
     position: relative;
