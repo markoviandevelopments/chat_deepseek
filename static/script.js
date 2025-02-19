@@ -43,8 +43,8 @@ marked.setOptions({
 });
 
 function copyCode(button) {
-    let codeBlock = button.nextElementSibling.querySelector("code");
-    let text = codeBlock.innerText;
+    let codeBlock = button.parentElement.querySelector("pre code");
+    let text = codeBlock.textContent;
 
     navigator.clipboard.writeText(text).then(() => {
         button.textContent = "Copied!";
