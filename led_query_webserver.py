@@ -43,7 +43,7 @@ def index():
             f'as well as the "@" symbol. For use with WS2812B leds. They are RGB, not GRB. Keep that in mind alongside the '
             f'theme ({theme}), which should be weighted heavily. Example formatting (of course, the variables should be '
             f'filled in with actual values that bare no corolation to those presented here in your response): '
-            f'@[[n, i, c], [b, f, g], ..., [w, b, b]]. There should be 100 tuples in your list. Thank you!'
+            f'@[[n, i, c], [b, f, g], ..., [w, b, b]]. There should be 10 tuples in your list. Thank you!'
         )
 
         result = query_api(user_prompt, temperature=temp)
