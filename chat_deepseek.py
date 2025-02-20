@@ -9,7 +9,7 @@ os.environ["OLLAMA_ACCELERATOR"] = "cuda"
 has_printed_cuda = False
 
 app = Flask(__name__, static_folder='static')
-CORS(app)  # Allow cross-origin requests
+CORS(app, resources={r"/*": {"origins": "https://markoviandevelopments.com"}})
 
 CHAT_FILE = "chat_history.json"
 
@@ -34,7 +34,6 @@ def home():
 
 @app.route('/chat', methods=['POST'])
 
-@app.route('/chat', methods=['POST'])
 def chat():
     global has_printed_cuda
     global chat_history

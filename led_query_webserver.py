@@ -7,7 +7,7 @@ import datetime
 
 app = Flask(__name__)
 
-API_URL = "http://50.188.120.138:5049/api/deepseek"  # Modify if necessary
+API_URL = "http://50.188.120.138:5049/api/deepseek"
 LAST_RESULT = {"status": "No request yet", "timestamp": None, "raw_output": ""}
 
 def query_api(user_prompt, temperature=0.7):
@@ -83,3 +83,4 @@ def index():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5047, debug=True)
+s
