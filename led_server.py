@@ -40,4 +40,6 @@ def get_led_pattern():
         return jsonify(led_pattern if led_pattern else [[0, 0, 0]] * 10)  # Default pattern if empty
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5048, debug=True)
+    app.run(host="0.0.0.0", port=5048, ssl_context=("/etc/letsencrypt/live/markovianchats.duckdns.org/fullchain.pem",
+                                                    "/etc/letsencrypt/live/markovianchats.duckdns.org/privkey.pem"))
+
