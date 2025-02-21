@@ -28,7 +28,9 @@ def update_led_pattern():
         except (json.JSONDecodeError, FileNotFoundError, IOError) as e:
             print(f"LED Pattern File Read Error: {e}")  # Debugging info
 
-        time.sleep(5)  # Wait for 5 seconds before checking again
+        for _ in range(10):
+            time.sleep(0.5)
+
 
 # Start the background thread
 thread = threading.Thread(target=update_led_pattern, daemon=True)

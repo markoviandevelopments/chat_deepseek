@@ -55,8 +55,9 @@ def index():
 
         user_prompt = (
             f'Generate an array of exactly 10 RGB tuples that aesthetically match the theme "{theme}". '
-            f'RGB values must be integers between 0-255. The response must strictly be formatted as: '
-            f'@[[(R, G, B), (R, G, B), ..., (R, G, B)]]. No extra text, explanations, or comments.'
+            f'Each RGB value must be an integer between 0-255, ensuring highly saturated and rich colors. '
+            f'Prioritize deep, bold, and vibrant shades over pastel or muted tones. '
+            f'The response must strictly be formatted as: @[[(R, G, B), (R, G, B), ..., (R, G, B)]]. No extra text, explanations, or comments.'
         )
 
         result = query_api(user_prompt, temperature=temp)
@@ -75,10 +76,20 @@ def index():
 
             list_str = result_cleaned[(indexx + 1):(i + indexx + 2)]
             try:
-                match = re.search(r"@\[\s*\[.*?\]\s*\]", result_cleaned)
+                match = re.search(r"@\[\s*\[\s*(?:\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\)\s*,?\s*){10}\s*\]\s*\]", result_cleaned)
+
                 if match:
                     list_str = match.group()[1:]  # Remove "@" prefix
-                    led_pattern = json.loads(list_str)  # Safer than `ast.literal_eval`
+                    try:
+                        led_pattern = ast.literal_eval(list_str)  # More robust for Python lists
+                        if len(led_pattern) == 10 and all(isinstance(color, tuple) and len(color) == 3 for color in led_pattern):
+                            with open("led_pattern.json", "w") as json_file:
+                                json.dump(led_pattern, json_file, indent=4)
+                            status = "Pass"
+                        else:
+                            led_pattern = "Validation Error: Expected exactly 10 RGB tuples."
+                    except Exception as e:
+                        led_pattern = f"Parsing Error: {str(e)}"
 
                     if len(led_pattern) == 10 and all(isinstance(item, list) and len(item) == 3 and all(isinstance(c, int) for c in item) for item in led_pattern):
                         with open("led_pattern.json", "w") as json_file:
@@ -90,7 +101,7 @@ def index():
                     led_pattern = "Format Error: Could not find valid RGB pattern."
 
             except json.JSONDecodeError as e:
-                led_pattern = f"Parsing Error: {str(e)}"
+                led_pattern = [[255, 0, 0], [255, 128, 0], [255, 255, 0], [0, 255, 0], [0, 255, 255], [0, 0, 255], [128, 0, 255], [255, 0, 255], [255, 0, 128], [128, 128, 128]]
 
         LAST_RESULT = {"status": status, "timestamp": timestamp, "raw_output": result}
 
