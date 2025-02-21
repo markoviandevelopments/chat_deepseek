@@ -46,8 +46,11 @@ def index():
             return jsonify({"error": "Theme is required"}), 400
 
         user_prompt = (
-            f'Generate exactly 10 RGB tuples as a Python list that match the theme "{theme}". '
-            f'Each RGB value must be an integer from 0-255, emphasizing bold, vibrant, saturated colors. '
+            f'Generate exactly 10 RGB tuples as a Python list that strongly and unmistakably match the theme "{theme}". '
+            f'The colors must be bold, vibrant, and instantly recognizable as fitting the theme. '
+            f'Ensure the most dominant colors associated with this theme are heavily represented, avoiding neutral or unrelated shades. '
+            f'If the theme has clear cultural, natural, or aesthetic associations, use colors that evoke those references. '
+            f'Ensure a mix of shades within the theme but avoid colors that contradict its essence. '
             f'Return ONLY the list, with NO extra text, formatting, explanations, or symbols. '
             f'Example Output: [[255, 0, 0], [0, 255, 0], [0, 0, 255], ..., [255, 255, 0]]'
         )
