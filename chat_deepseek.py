@@ -1,79 +1,81 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 import ollama
 import json
 import os
 
-app = Flask(__name__)
-CORS(app)
+os.environ["OLLAMA_ACCELERATOR"] = "cuda"
 
-CHAT_FILE = "chat_sessions.json"
+has_printed_cuda = False
 
-# Load stored sessions from file
-def load_chat_sessions():
+app = Flask(__name__, static_folder='static')
+CORS(app, resources={r"/*": {"origins": "https://markoviandevelopments.com"}})
+
+CHAT_FILE = "chat_history.json"
+
+# Load chat history from file (if exists)
+def load_chat_history():
     if os.path.exists(CHAT_FILE):
         with open(CHAT_FILE, "r") as f:
             return json.load(f)
-    return {}
+    return []
 
-# Save sessions to file
-def save_chat_sessions():
+# Save chat history to file
+def save_chat_history():
     with open(CHAT_FILE, "w") as f:
-        json.dump(chat_sessions, f, indent=4)
+        json.dump(chat_history, f, indent=4)
 
-# Initialize chat session storage
-chat_sessions = load_chat_sessions()
+# Initialize chat history
+chat_history = load_chat_history()
+
+@app.route('/')
+def home():
+    return render_template('index.html')
 
 @app.route('/chat', methods=['POST'])
+
 def chat():
-    session_id = request.json.get('session_id', 'default')
+    global has_printed_cuda
+    global chat_history
+
     user_input = request.json.get('message', '')
 
     if not user_input:
         return jsonify({"error": "Empty message"}), 400
 
-    # Ensure session exists
-    if session_id not in chat_sessions:
-        chat_sessions[session_id] = []
+    # Print CUDA status
+    if not has_printed_cuda:
+        cuda_status = os.environ.get("OLLAMA_ACCELERATOR", "Not set")
+        print(f"🔥 CUDA Status: OLLAMA_ACCELERATOR={cuda_status}")
+        has_printed_cuda = True
 
-    # Retrieve the last 15 exchanges (adjustable for token limit)
-    session_chat = chat_sessions[session_id][-15:]  
-    formatted_history = "\n".join([f"{msg['role']}: {msg['message']}" for msg in session_chat])
+    # Add user's message immediately
+    chat_history.append({"role": "user", "message": user_input})
+    save_chat_history()
 
-    # Construct prompt with history
-    full_prompt = f"""
-    The following is an ongoing conversation. Here is the recent chat history:
-    {formatted_history}
+    # Generate response using DeepSeek-R1
+    response = ollama.generate(
+        model="deepseek-r1:7b",
+        prompt=user_input
+    )['response']
 
-    User: {user_input}
-    Assistant:
-    """
+    # Store DeepSeek's response
+    chat_history.append({"role": "assistant", "message": response})
+    save_chat_history()
 
-    # Generate response from DeepSeek R1
-    response = ollama.generate(model="deepseek-r1:7b", prompt=full_prompt)['response']
+    return jsonify({"response": response, "history": chat_history})
 
-    # Store the conversation
-    chat_sessions[session_id].append({"role": "user", "message": user_input})
-    chat_sessions[session_id].append({"role": "assistant", "message": response})
-    save_chat_sessions()
-
-    return jsonify({"response": response, "history": chat_sessions[session_id]})
 
 @app.route('/history', methods=['GET'])
 def get_history():
-    session_id = request.args.get('session_id', 'default')
-    return jsonify({"history": chat_sessions.get(session_id, [])})
+    return jsonify({"history": chat_history})
 
 @app.route('/clear', methods=['POST'])
 def clear_chat():
-    session_id = request.json.get('session_id', 'default')
-    chat_sessions[session_id] = []  # Clear chat history for that session
-    save_chat_sessions()
+    global chat_history
+    chat_history = []  # Clear chat history
+    save_chat_history()  # Overwrite file with empty chat
     return jsonify({"message": "Chat history cleared."})
-
-@app.route('/sessions', methods=['GET'])
-def get_sessions():
-    return jsonify({"sessions": list(chat_sessions.keys())})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5050, debug=True)
