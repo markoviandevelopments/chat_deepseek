@@ -57,7 +57,7 @@ def index():
             f'Generate an array of exactly 10 RGB tuples that aesthetically match the theme "{theme}". '
             f'Each RGB value must be an integer between 0-255, ensuring highly saturated and rich colors. '
             f'Prioritize deep, bold, and vibrant shades over pastel or muted tones. '
-            f'The response must strictly be formatted as: @[[(R, G, B), (R, G, B), ..., (R, G, B)]]. No extra text, explanations, or comments.'
+            f'The response must strictly be formatted as: @[[R, G, B], [R, G, B], ..., [R, G, B]]. No extra text, explanations, or comments.'
         )
 
         result = query_api(user_prompt, temperature=temp)
