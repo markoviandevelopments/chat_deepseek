@@ -4,9 +4,13 @@ import ast
 import re
 import json
 import datetime
+from flask_cors import CORS
+
 
 app = Flask(__name__, static_url_path="/leds/static")
 app.config["APPLICATION_ROOT"] = "/leds"
+
+CORS(app)
 
 API_URL = "http://50.188.120.138:5049/api/deepseek"
 LAST_RESULT = {"status": "No request yet", "timestamp": None, "raw_output": ""}
