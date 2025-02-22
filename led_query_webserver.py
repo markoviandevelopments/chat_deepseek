@@ -46,13 +46,13 @@ def index():
             return jsonify({"error": "Theme is required"}), 400
 
         user_prompt = (
-            f'Generate exactly 10 RGB tuples as a Python list that strongly and unmistakably match the theme "{theme}". '
-            f'The colors must be bold, vibrant, and instantly recognizable as fitting the theme. '
-            f'Ensure the most dominant colors associated with this theme are heavily represented, avoiding neutral or unrelated shades. '
-            f'If the theme has clear cultural, natural, or aesthetic associations, use colors that evoke those references. '
-            f'Ensure a mix of shades within the theme but avoid colors that contradict its essence. '
+            f'Generate exactly 10 RGB tuples as a Python list that fully embodies the theme "{theme}". '
+            f'Each color must be highly representative of this theme, avoiding unnecessary variety. '
+            f'If the theme is known for specific colors (e.g., camouflage = shades of green/brown), ensure the output maintains that consistency. '
+            f'Do NOT introduce unrelated colors—every color must strongly reinforce the theme. '
+            f'Repeat colors when appropriate rather than adding extra variety. '
             f'Return ONLY the list, with NO extra text, formatting, explanations, or symbols. '
-            f'Example Output: [[255, 0, 0], [0, 255, 0], [0, 0, 255], ..., [255, 255, 0]]'
+            f'Example Output: [[...theme-consistent colors...]]'
         )
 
         result = query_api(user_prompt, temperature=temp)
@@ -88,7 +88,13 @@ def index():
             "led_pattern": led_pattern if status == "Pass" else None,
             "status": status,
             "timestamp": timestamp,
-            "raw_output": raw_result
+            "raw_output": raw_result,
+            "formatted_output": json.dumps(led_pattern, indent=4) if status == "Pass" else None,
+            "metadata": {
+                "theme": theme,
+                "temperature": temp,
+                "api_response_length": len(raw_result)
+            }
         }
 
         # Redirect for HTML requests
