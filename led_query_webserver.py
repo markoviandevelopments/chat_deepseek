@@ -1,10 +1,12 @@
 from flask import Flask, render_template, request, jsonify, redirect
+import os
 import requests
 import re
 import json
 import datetime
 import ast
 from flask_cors import CORS
+import mysql.connector
 
 app = Flask(__name__, static_url_path="/leds/static")
 app.config["APPLICATION_ROOT"] = "/leds"
@@ -13,6 +15,21 @@ CORS(app)
 
 API_URL = "http://50.188.120.138:5049/api/deepseek"
 LAST_RESULT = {"status": "No request yet", "timestamp": None, "raw_output": ""}
+
+db_config = {
+    "host": os.getenv("DB_HOST", "localhost"),
+    "user": os.getenv("DB_USER", "log_user"),
+    "password": os.getenv("DB_PASSWORD", "Not$erp011"),
+    "database": os.getenv("DB_NAME", "client_logs_db")
+}
+
+def get_db_connection():
+    """Establish a database connection and return the connection object."""
+    try:
+        return mysql.connector.connect(**db_config)
+    except mysql.connector.Error as e:
+        print(f"Database Connection Error: {e}")
+        return None  # Prevent crashes if DB is unreachable
 
 def query_api(user_prompt, temperature=0.7):
     params = {"prompt": user_prompt, "temperature": temperature}
@@ -55,6 +72,7 @@ def index():
             f'The response must strictly be formatted as: @[[R, G, B], [R, G, B], ..., [R, G, B]].'
         )
 
+        ip_address = request.remote_addr
         result = query_api(user_prompt, temperature=temp)
         raw_result = result
 
@@ -68,7 +86,7 @@ def index():
         if match:
             list_str = match.group()
             try:
-                led_pattern = ast.literal_eval(list_str)  # Convert to Python list
+                led_pattern = ast.literal_eval(list_str)
                 if len(led_pattern) == 10 and all(isinstance(color, list) and len(color) == 3 for color in led_pattern):
                     status = "Pass"
 
@@ -82,7 +100,28 @@ def index():
         else:
             led_pattern = "Format Error: Could not find valid RGB pattern."
 
+        api_response_length = len(raw_result)
+
         LAST_RESULT = {"status": status, "timestamp": timestamp, "raw_output": result}
+
+        conn = get_db_connection()
+        if conn:
+            try:
+                with conn.cursor() as cursor:
+                    cursor.execute(
+                        """
+                        INSERT INTO led_history (timestamp, prompt, theme, temperature, ip_address, pattern_generated, 
+                                                api_response_length, status, raw_output)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        """,
+                        (timestamp, user_prompt, theme, temp, ip_address, json.dumps(led_pattern) if led_pattern else None,
+                        api_response_length, status, raw_result)
+                    )
+                conn.commit()
+            except mysql.connector.Error as e:
+                print(f"Database Insert Error: {e}")
+            finally:
+                conn.close()  # Always close DB connection
 
         response_data = {
             "led_pattern": led_pattern if status == "Pass" else None,

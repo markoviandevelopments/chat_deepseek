@@ -28,7 +28,7 @@ def update_led_pattern():
         except (json.JSONDecodeError, FileNotFoundError, IOError) as e:
             print(f"LED Pattern File Read Error: {e}")  # Debugging info
 
-        for _ in range(10):
+        for _ in range(5):
             time.sleep(0.5)
 
 
@@ -43,4 +43,9 @@ def get_led_pattern():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5048)
+
+
+
+
+
 
