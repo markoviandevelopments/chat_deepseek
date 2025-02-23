@@ -52,8 +52,8 @@ def index():
             f'Do NOT introduce unrelated colors—every color must strongly reinforce the theme. '
             f'Repeat colors when appropriate rather than adding extra variety. '
             f'Return ONLY the list, with NO extra text, formatting, explanations, or symbols. '
+            f'The response must strictly be formatted as: @[[R, G, B], [R, G, B], ..., [R, G, B]].'
         )
-
 
         result = query_api(user_prompt, temperature=temp)
         raw_result = result
