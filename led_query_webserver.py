@@ -53,40 +53,6 @@ def query_api(user_prompt, temperature=0.7):
 def index():
     global LAST_RESULT
 
-    conn = get_db_connection()
-    if conn:
-        try:
-            with conn.cursor(dictionary=True) as cursor:
-                cursor.execute(
-                    """
-                    SELECT pattern_generated, timestamp, theme, temperature, api_response_length, raw_output 
-                    FROM led_history 
-                    WHERE status = 'Pass'
-                    ORDER BY timestamp DESC 
-                    LIMIT 1
-                    """
-                )
-                latest_entry = cursor.fetchone()
-                if latest_entry:
-                    LAST_RESULT = {
-                        "status": "Pass",
-                        "timestamp": latest_entry["timestamp"],
-                        "led_pattern": json.loads(latest_entry["pattern_generated"]),
-                        "raw_output": latest_entry["raw_output"],
-                        "metadata": {
-                            "theme": latest_entry["theme"],
-                            "temperature": latest_entry["temperature"],
-                            "api_response_length": latest_entry["api_response_length"]
-                        }
-                    }
-        except mysql.connector.Error as e:
-            print(f"Database Query Error: {e}")
-        finally:
-            conn.close()
-
-    # Ensure GET requests return JSON so the frontend can fetch the latest result.
-    if request.method == "GET":
-        return jsonify(LAST_RESULT)
     if request.method == "POST":
         # Handle both JSON and Form Data Requests
         request_data = request.get_json() if request.is_json else request.form
@@ -176,6 +142,42 @@ def index():
             return redirect("https://markoviandevelopments.com/other_projects/led_app/led_app.html")
 
         return jsonify(response_data)
+    
+
+    conn = get_db_connection()
+    if conn:
+        try:
+            with conn.cursor(dictionary=True) as cursor:
+                cursor.execute(
+                    """
+                    SELECT pattern_generated, timestamp, theme, temperature, api_response_length, raw_output 
+                    FROM led_history 
+                    WHERE status = 'Pass'
+                    ORDER BY timestamp DESC 
+                    LIMIT 1
+                    """
+                )
+                latest_entry = cursor.fetchone()
+                if latest_entry:
+                    LAST_RESULT = {
+                        "status": "Pass",
+                        "timestamp": latest_entry["timestamp"],
+                        "led_pattern": json.loads(latest_entry["pattern_generated"]),
+                        "raw_output": latest_entry["raw_output"],
+                        "metadata": {
+                            "theme": latest_entry["theme"],
+                            "temperature": latest_entry["temperature"],
+                            "api_response_length": latest_entry["api_response_length"]
+                        }
+                    }
+        except mysql.connector.Error as e:
+            print(f"Database Query Error: {e}")
+        finally:
+            conn.close()
+
+    # Ensure GET requests return JSON so the frontend can fetch the latest result.
+    if request.method == "GET":
+        return jsonify(LAST_RESULT)
 
     return render_template("led_index.html", last_result=LAST_RESULT)
 
