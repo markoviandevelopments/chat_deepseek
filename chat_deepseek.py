@@ -4,6 +4,7 @@ import ollama
 import json
 import os
 import mysql.connector
+import re
 
 os.environ["OLLAMA_ACCELERATOR"] = "cuda"
 
@@ -94,9 +95,11 @@ def chat():
     chat_history.append({"role": "assistant", "message": response})
     save_chat_history()
 
+    filtered_response = re.sub(r'<think>.*?</think>', '', response, flags=re.DOTALL).strip()
+
     log_chat_message(session_id, user_ip, user_agent, "assistant", response)
 
-    return jsonify({"response": response, "history": chat_history})
+    return jsonify({"response": filtered_response, "history": chat_history})
 
 
 @app.route('/history', methods=['GET'])
