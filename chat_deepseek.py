@@ -60,6 +60,7 @@ def home():
 
 @app.route('/chat', methods=['POST'])
 
+@app.route('/chat', methods=['POST'])
 def chat():
     global has_printed_cuda
     global chat_history
@@ -81,23 +82,23 @@ def chat():
     # Add user's message immediately
     chat_history.append({"role": "user", "message": user_input})
     save_chat_history()
-
-        # Log user's message
     log_chat_message(session_id, user_ip, user_agent, "user", user_input)
 
     # Generate response using DeepSeek-R1
-    response = ollama.generate(
+    raw_response = ollama.generate(
         model="deepseek-r1:7b",
         prompt=user_input
     )['response']
 
-    filtered_response = re.sub(r'<think>.*?</think>', '', response, flags=re.DOTALL).strip()
+    # **Filter out <think> sections**
+    filtered_response = re.sub(r'<think>.*?</think>', '', raw_response, flags=re.DOTALL).strip()
 
-    # Store DeepSeek's response
+    # **Store only the filtered response** in chat history
     chat_history.append({"role": "assistant", "message": filtered_response})
     save_chat_history()
 
-    log_chat_message(session_id, user_ip, user_agent, "assistant", response)
+    # **Log both versions:**
+    log_chat_message(session_id, user_ip, user_agent, "assistant", filtered_response)
 
     return jsonify({"response": filtered_response, "history": chat_history})
 
