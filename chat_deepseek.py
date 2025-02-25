@@ -91,11 +91,11 @@ def chat():
         prompt=user_input
     )['response']
 
-    # Store DeepSeek's response
-    chat_history.append({"role": "assistant", "message": response})
-    save_chat_history()
-
     filtered_response = re.sub(r'<think>.*?</think>', '', response, flags=re.DOTALL).strip()
+
+    # Store DeepSeek's response
+    chat_history.append({"role": "assistant", "message": filtered_response})
+    save_chat_history()
 
     log_chat_message(session_id, user_ip, user_agent, "assistant", response)
 
