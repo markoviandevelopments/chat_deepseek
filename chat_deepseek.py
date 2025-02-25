@@ -58,7 +58,6 @@ chat_history = load_chat_history()
 def home():
     return render_template('index.html')
 
-@app.route('/chat', methods=['POST'])
 
 @app.route('/chat', methods=['POST'])
 def chat():
@@ -73,32 +72,30 @@ def chat():
     if not user_input:
         return jsonify({"error": "Empty message"}), 400
 
-    # Print CUDA status
+    # Print CUDA status once
     if not has_printed_cuda:
         cuda_status = os.environ.get("OLLAMA_ACCELERATOR", "Not set")
         print(f"🔥 CUDA Status: OLLAMA_ACCELERATOR={cuda_status}")
         has_printed_cuda = True
 
-    # Add user's message immediately
+    # Log user's message
     chat_history.append({"role": "user", "message": user_input})
     save_chat_history()
     log_chat_message(session_id, user_ip, user_agent, "user", user_input)
 
-    # Generate response using DeepSeek-R1
+    # Generate response from DeepSeek-R1
     raw_response = ollama.generate(
         model="deepseek-r1:7b",
         prompt=user_input
     )['response']
 
-    # **Filter out <think> sections**
-    filtered_response = re.sub(r'<think>.*?</think>', '', raw_response, flags=re.DOTALL).strip()
+    # **Ensure '<think>...</think>' is fully removed**
+    filtered_response = re.sub(r'<think>[\s\S]*?</think>', '', raw_response, flags=re.DOTALL).strip()
 
-    # **Store only the filtered response** in chat history
+    # Log **raw** response for debugging but store the **clean** response
+    log_chat_message(session_id, user_ip, user_agent, "assistant", raw_response)  # Raw for logging
     chat_history.append({"role": "assistant", "message": filtered_response})
     save_chat_history()
-
-    # **Log both versions:**
-    log_chat_message(session_id, user_ip, user_agent, "assistant", filtered_response)
 
     return jsonify({"response": filtered_response, "history": chat_history})
 
