@@ -117,13 +117,17 @@ def list_sessions():
     db = get_db_connection()
     cursor = db.cursor()
 
-    query = "SELECT DISTINCT session_id FROM chat_logs;"
+    query = """
+    SELECT DISTINCT c.session_id 
+    FROM chat_logs c
+    LEFT JOIN deleted_sessions d ON c.session_id = d.session_id
+    WHERE d.session_id IS NULL
+    """
     cursor.execute(query)
     sessions = [row[0] for row in cursor.fetchall()]
 
     cursor.close()
     db.close()
-
     return jsonify({"sessions": sessions})
 
 @app.route('/new_session', methods=['POST'])
@@ -135,14 +139,25 @@ def new_session():
     db = get_db_connection()
     cursor = db.cursor()
 
-    query = "INSERT INTO chat_logs (session_id, user_ip, user_agent, role, message) VALUES (%s, %s, %s, %s, %s);"
-    cursor.execute(query, (session_id, "system", "server", "system", f"Session {session_id} created"))
-    db.commit()
+    try:
+        # Remove from deleted sessions if recreating
+        cursor.execute("DELETE FROM deleted_sessions WHERE session_id = %s", (session_id,))
+        
+        # Existing creation logic
+        cursor.execute("""
+            INSERT INTO chat_logs (session_id, user_ip, user_agent, role, message)
+            VALUES (%s, %s, %s, %s, %s)
+        """, (session_id, "system", "server", "system", f"Session {session_id} created"))
+        
+        db.commit()
+        return jsonify({"success": True})
 
-    cursor.close()
-    db.close()
-
-    return jsonify({"success": True})
+    except mysql.connector.Error as err:
+        db.rollback()
+        return jsonify({"error": f"Database error: {err}"}), 500
+    finally:
+        cursor.close()
+        db.close()
 
 @app.route('/clear', methods=['POST'])
 def clear_chat():
@@ -160,6 +175,40 @@ def clear_chat():
 
     return jsonify({"message": f"Chat history cleared for session {session_id}."})
 
+@app.route('/soft_delete_session', methods=['POST'])
+def soft_delete_session():
+    session_id = request.json.get('session_id')
+    if not session_id:
+        return jsonify({"error": "Session ID required"}), 400
+        
+    if session_id == "default":
+        return jsonify({"error": "Cannot delete default session"}), 400
+
+    db = get_db_connection()
+    cursor = db.cursor()
+
+    try:
+        # Verify session exists
+        cursor.execute("SELECT 1 FROM chat_logs WHERE session_id = %s LIMIT 1", (session_id,))
+        if not cursor.fetchone():
+            return jsonify({"error": "Session not found"}), 404
+
+        # Soft delete entry
+        cursor.execute("""
+            INSERT INTO deleted_sessions (session_id)
+            VALUES (%s)
+            ON DUPLICATE KEY UPDATE session_id = VALUES(session_id)
+        """, (session_id,))
+        
+        db.commit()
+        return jsonify({"success": True})
+        
+    except mysql.connector.Error as err:
+        db.rollback()
+        return jsonify({"error": f"Database error: {err}"}), 500
+    finally:
+        cursor.close()
+        db.close()
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5050, debug=True)
