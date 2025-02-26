@@ -89,16 +89,12 @@ def chat():
         prompt=user_input
     )['response']
 
-    # **Ensure '<think>...</think>' is fully removed**
-    filtered_response = re.sub(r'<think>[\s\S]*?</think>', '', raw_response, flags=re.DOTALL).strip()
-
-    # Log **raw** response for debugging but store the **clean** response
-    log_chat_message(session_id, user_ip, user_agent, "assistant", raw_response)  # Raw for logging
-    chat_history.append({"role": "assistant", "message": filtered_response})
+    # Log and store the full response
+    log_chat_message(session_id, user_ip, user_agent, "assistant", raw_response)
+    chat_history.append({"role": "assistant", "message": raw_response})
     save_chat_history()
 
-    return jsonify({"response": filtered_response, "history": chat_history})
-
+    return jsonify({"response": raw_response, "history": chat_history})
 
 @app.route('/history', methods=['GET'])
 def get_history():
