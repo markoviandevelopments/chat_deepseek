@@ -62,7 +62,6 @@ def home():
 @app.route('/chat', methods=['POST'])
 def chat():
     global has_printed_cuda
-    global chat_history
 
     user_input = request.json.get('message', '')
     session_id = request.json.get('session_id', 'default')
@@ -72,29 +71,33 @@ def chat():
     if not user_input:
         return jsonify({"error": "Empty message"}), 400
 
-    # Print CUDA status once
     if not has_printed_cuda:
         cuda_status = os.environ.get("OLLAMA_ACCELERATOR", "Not set")
         print(f"🔥 CUDA Status: OLLAMA_ACCELERATOR={cuda_status}")
         has_printed_cuda = True
 
-    # Log user's message
-    chat_history.append({"role": "user", "message": user_input})
-    save_chat_history()
+    # Log user's message to database
     log_chat_message(session_id, user_ip, user_agent, "user", user_input)
 
-    # Generate response from DeepSeek-R1
+    # Generate response
     raw_response = ollama.generate(
         model="deepseek-r1:7b",
         prompt=user_input
     )['response']
 
-    # Log and store the full response
+    # Log assistant's response to database
     log_chat_message(session_id, user_ip, user_agent, "assistant", raw_response)
-    chat_history.append({"role": "assistant", "message": raw_response})
-    save_chat_history()
 
-    return jsonify({"response": raw_response, "history": chat_history})
+    # Fetch updated session-specific history from database
+    db = get_db_connection()
+    cursor = db.cursor(dictionary=True)
+    query = "SELECT role, message, timestamp FROM chat_logs WHERE session_id = %s ORDER BY timestamp;"
+    cursor.execute(query, (session_id,))
+    session_history = cursor.fetchall()
+    cursor.close()
+    db.close()
+
+    return jsonify({"response": raw_response, "history": session_history})
 
 @app.route('/history', methods=['GET'])
 def get_history():
@@ -149,6 +152,58 @@ def new_session():
             VALUES (%s, %s, %s, %s, %s)
         """, (session_id, "system", "server", "system", f"Session {session_id} created"))
         
+        db.commit()
+        return jsonify({"success": True})
+
+    except mysql.connector.Error as err:
+        db.rollback()
+        return jsonify({"error": f"Database error: {err}"}), 500
+    finally:
+        cursor.close()
+        db.close()
+
+@app.route('/rename_session', methods=['POST'])
+def rename_session():
+    old_session = request.json.get('old_session_id')
+    new_session = request.json.get('new_session_id')
+    
+    if not old_session or not new_session:
+        return jsonify({"error": "Both old and new session names required"}), 400
+        
+    if old_session == "default":
+        return jsonify({"error": "Cannot rename default session"}), 400
+
+    db = get_db_connection()
+    cursor = db.cursor()
+
+    try:
+        # Verify old session exists
+        cursor.execute("SELECT 1 FROM chat_logs WHERE session_id = %s LIMIT 1", (old_session,))
+        if not cursor.fetchone():
+            return jsonify({"error": "Original session not found"}), 404
+
+        # Check for existing new session name
+        cursor.execute("SELECT 1 FROM chat_logs WHERE session_id = %s LIMIT 1", (new_session,))
+        if cursor.fetchone():
+            return jsonify({"error": "New session name already exists"}), 409
+
+        # Start transaction
+        db.start_transaction()
+
+        # Update chat logs
+        cursor.execute("""
+            UPDATE chat_logs 
+            SET session_id = %s 
+            WHERE session_id = %s
+        """, (new_session, old_session))
+
+        # Update deleted sessions if exists
+        cursor.execute("""
+            UPDATE deleted_sessions 
+            SET session_id = %s 
+            WHERE session_id = %s
+        """, (new_session, old_session))
+
         db.commit()
         return jsonify({"success": True})
 
