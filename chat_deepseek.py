@@ -18,8 +18,7 @@ DB_CONFIG = {
 }
 
 app = Flask(__name__, static_folder='static')
-CORS(app, resources={r"/*": {"origins": "https://markoviandevelopments.com"}})
-
+CORS(app, resources={r"/*": {"origins": ["https://markoviandevelopments.com", "https://markovianchats.duckdns.org:8443"]}})
 CHAT_FILE = "chat_history.json"
 
 def get_db_connection():
