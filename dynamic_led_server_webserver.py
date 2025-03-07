@@ -81,10 +81,11 @@ def index():
             "static": (
                 f'Generate exactly 10 RGB tuples as a Python list that fully embodies the theme "{theme}". '
                 f'Each color must be highly representative of this theme, avoiding unnecessary variety. '
-                f'If the theme is known for specific colors (e.g., camouflage = shades of green/brown), ensure consistency. '
-                f'Do NOT introduce unrelated colors—every color must reinforce the theme. '
+                f'If the theme is known for specific colors (e.g., camouflage = shades of green/brown), ensure the output maintains that consistency. '
+                f'Do NOT introduce unrelated colors—every color must strongly reinforce the theme. '
                 f'Repeat colors when appropriate rather than adding extra variety. '
-                f'Return ONLY the list, formatted as: [[R, G, B], [R, G, B], ..., [R, G, B]].'
+                f'Return ONLY the list, with NO extra text, formatting, explanations, or symbols. '
+                f'The response must strictly be formatted as: @[[R, G, B], [R, G, B], ..., [R, G, B]].'
             ),
             "animated": (
                 f'Generate an LED animation sequence for the theme "{theme}". '
