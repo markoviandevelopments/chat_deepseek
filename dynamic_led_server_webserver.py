@@ -12,7 +12,6 @@ import threading
 
 app = Flask(__name__, static_url_path="/leds/static")
 app.config["APPLICATION_ROOT"] = "/leds"
-socketio = SocketIO(app, cors_allowed_origins="*")
 
 CORS(app)
 
@@ -178,4 +177,4 @@ def index():
     return jsonify(LAST_RESULT)
 
 if __name__ == "__main__":
-    socketio.run(app, host="0.0.0.0", port=5047, debug=True, allow_unsafe_werkzeug=True)
+    app.run(host="0.0.0.0", port=5047, debug=True)
