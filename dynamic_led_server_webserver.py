@@ -13,6 +13,8 @@ import threading
 app = Flask(__name__, static_url_path="/leds/static")
 app.config["APPLICATION_ROOT"] = "/leds"
 
+socketio = SocketIO(app, cors_allowed_origins="https://markoviandevelopments.com")
+
 CORS(app)
 
 API_URL = "http://50.188.120.138:5049/api/deepseek"
@@ -107,7 +109,7 @@ def index():
             match = re.search(r"@\[\s*\[\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\](?:\s*,\s*\[\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\]){9}\s*\]", result)
             if match:
                 try:
-                    led_data = ast.literal_eval(match.group(1))
+                    led_data = ast.literal_eval(match.group(0))
                     if len(led_data) == 10 and all(len(c) == 3 and all(0 <= v <= 255 for v in c) for c in led_data):
                         status = "Pass"
                         with animation_lock:
