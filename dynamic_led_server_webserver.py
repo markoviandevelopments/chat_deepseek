@@ -50,14 +50,16 @@ def emit_animation():
     global ANIMATION_DATA
     while True:
         with animation_lock:
-            if ANIMATION_DATA["type"] == "static":
-                socketio.emit("led_update", {"pattern": ANIMATION_DATA["frames"][0]})
-                socketio.sleep(5)  # Static: update infrequently
-            elif ANIMATION_DATA["type"] == "animated":
-                for frame in ANIMATION_DATA["frames"]:
-                    socketio.emit("led_update", {"pattern": frame})
-                    socketio.sleep(ANIMATION_DATA["frame_rate"])
-                # Loop the animation indefinitely
+            if ANIMATION_DATA["frames"]:  # Check if frames list is non-empty
+                if ANIMATION_DATA["type"] == "static":
+                    socketio.emit("led_update", {"pattern": ANIMATION_DATA["frames"][0]})
+                    socketio.sleep(5)  # Static: update infrequently
+                elif ANIMATION_DATA["type"] == "animated":
+                    for frame in ANIMATION_DATA["frames"]:
+                        socketio.emit("led_update", {"pattern": frame})
+                        socketio.sleep(ANIMATION_DATA["frame_rate"])
+            else:
+                socketio.sleep(1)  # Wait briefly if no frames are available
 
 socketio.start_background_task(emit_animation)  # Start the task once at server start
 
@@ -176,4 +178,4 @@ def index():
     return jsonify(LAST_RESULT)
 
 if __name__ == "__main__":
-    socketio.run(app, host="0.0.0.0", port=5047, debug=True)
+    socketio.run(app, host="0.0.0.0", port=5047, debug=True, allow_unsafe_werkzeug=True)
