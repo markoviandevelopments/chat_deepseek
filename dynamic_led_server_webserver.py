@@ -13,7 +13,7 @@ import threading
 app = Flask(__name__, static_url_path="/leds/static")
 app.config["APPLICATION_ROOT"] = "/leds"
 
-socketio = SocketIO(app, cors_allowed_origins="https://markoviandevelopments.com")
+socketio = SocketIO(app, cors_allowed_origins="https://markovianchats.duckdns.org")
 
 CORS(app)
 
