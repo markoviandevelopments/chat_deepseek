@@ -138,6 +138,13 @@ def index():
             else:
                 led_data = "Format Error: Invalid animation data"
 
+        print(f"Writing to led_pattern.json: {json.dumps({
+            'pattern_type': pattern_type,
+            'generated_at': timestamp,
+            'data': led_data if status == 'Pass' else None,
+            'validation_status': status
+        }, indent=4)}")
+
         with open("led_pattern.json", "w") as json_file:
             json.dump({
                 "pattern_type": pattern_type,

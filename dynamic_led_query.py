@@ -26,10 +26,18 @@ def update_led_pattern():
                     with open("led_pattern.json", "r", encoding="utf-8") as file:
                         new_data = json.load(file)
                     with pattern_lock:
-                        if isinstance(new_data, dict) and new_data.get("validation_status") == "Pass":
+                        if (isinstance(new_data, dict) and 
+                            new_data.get("validation_status") == "Pass" and 
+                            new_data.get("data") is not None):
                             led_pattern_data = new_data
                         else:
                             print(f"Invalid pattern data: {new_data}")
+                            led_pattern_data = {
+                                "pattern_type": "static",
+                                "generated_at": None,
+                                "data": {"frames": [[[0, 0, 0] for _ in range(10)]], "frame_rate": 0.1},
+                                "validation_status": "invalid_pattern"
+                            }
                     last_modified = current_modified
             else:
                 print("led_pattern.json not found")
