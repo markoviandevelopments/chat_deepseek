@@ -107,18 +107,21 @@ def index():
         led_data, status = None, "Fail"
 
         if pattern_type == "static":
-            match = re.search(r"@\[\s*\[\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\](?:\s*,\s*\[\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\]){9}\s*\]", result)
+            match = re.search(r"@\[.*?\]", result, re.DOTALL)
             if match:
                 try:
-                    led_data = ast.literal_eval(match.group(0))
-                    if len(led_data) == 10 and all(len(c) == 3 and all(0 <= v <= 255 for v in c) for c in led_data):
+                    led_data = ast.literal_eval(match.group(0)[1:])  # Remove '@'
+                    if (len(led_data) == 10 and 
+                        all(len(c) == 3 and all(0 <= v <= 255 for v in c) for c in led_data)):
                         status = "Pass"
                         with animation_lock:
                             ANIMATION_DATA = {"frames": [led_data], "frame_rate": 0.1, "type": "static"}
+                    else:
+                        led_data = "Validation Error: Invalid RGB values or length"
                 except Exception as e:
                     led_data = f"Parsing Error: {e}"
             else:
-                led_data = "Format Error: Invalid static pattern"
+                led_data = "Format Error: No valid static pattern"
 
         elif pattern_type == "animated":
             match = re.search(r'@\{.*"frames":\s*\[.*\],\s*"frame_rate":\s*[0-1]?\.\d+\}', result, re.DOTALL)
