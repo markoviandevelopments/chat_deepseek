@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, redirect, url_for
 from flask_socketio import SocketIO, emit
 import os
 import requests
@@ -9,6 +9,11 @@ import ast
 from flask_cors import CORS
 import mysql.connector
 import threading
+import logging
+
+# Set up logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__, static_url_path="/leds/static")
 app.config["APPLICATION_ROOT"] = "/leds"
@@ -18,7 +23,7 @@ socketio = SocketIO(app, cors_allowed_origins="https://markovianchats.duckdns.or
 CORS(app)
 
 API_URL = "http://50.188.120.138:5049/api/deepseek"
-LAST_RESULT = {"status": "No request yet", "timestamp": None, "raw_output": ""}
+LAST_RESULT = {"status": "No request yet", "timestamp": None, "raw_output": "", "think_content": ""}
 ANIMATION_DATA = {"frames": [], "frame_rate": 0.1, "type": "static"}  # Frames and rate in seconds
 animation_lock = threading.Lock()
 
@@ -33,36 +38,38 @@ def get_db_connection():
     try:
         return mysql.connector.connect(**db_config)
     except mysql.connector.Error as e:
-        print(f"Database Connection Error: {e}")
+        logger.error(f"Database Connection Error: {e}")
         return None
 
 def query_api(user_prompt, temperature=0.7):
     params = {"prompt": user_prompt, "temperature": temperature}
     try:
-        response = requests.get(API_URL, params=params)
+        response = requests.get(API_URL, params=params, timeout=10)  # Add timeout
         response.raise_for_status()
         return response.json().get("response", "").strip() or "No response received."
     except requests.RequestException as e:
-        print("API Request Error:", e)
+        logger.error(f"API Request Error: {e}")
         return f"Error: {e}"
-
+    
 def emit_animation():
     """Background task to emit animation frames via WebSocket."""
     global ANIMATION_DATA
     while True:
         with animation_lock:
-            if ANIMATION_DATA["frames"]:  # Check if frames list is non-empty
+            if ANIMATION_DATA["frames"]:
                 if ANIMATION_DATA["type"] == "static":
                     socketio.emit("led_update", {"pattern": ANIMATION_DATA["frames"][0]})
-                    socketio.sleep(5)  # Static: update infrequently
+                    logger.debug(f"Emitted static frame: {ANIMATION_DATA['frames'][0]}")
+                    socketio.sleep(5)
                 elif ANIMATION_DATA["type"] == "animated":
                     for frame in ANIMATION_DATA["frames"]:
                         socketio.emit("led_update", {"pattern": frame})
+                        logger.debug(f"Emitted animated frame: {frame}")
                         socketio.sleep(ANIMATION_DATA["frame_rate"])
             else:
-                socketio.sleep(1)  # Wait briefly if no frames are available
+                socketio.sleep(1)
 
-socketio.start_background_task(emit_animation)  # Start the task once at server start
+socketio.start_background_task(emit_animation)
 
 @app.route("/leds", methods=["GET", "POST"])
 def index():
@@ -76,7 +83,7 @@ def index():
 
         if not theme:
             return jsonify({"error": "Theme is required"}), 400
-
+        
         prompt_templates = {
             "static": (
                 f'Generate exactly 10 RGB tuples as a Python list that fully embodies the theme "{theme}". '
@@ -106,8 +113,16 @@ def index():
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         led_data, status = None, "Fail"
 
+        # Extract <think> section if present (for logging or display)
+        think_match = re.search(r'<think>.*?</think>', raw_result, re.DOTALL)
+        think_content = think_match.group(0) if think_match else "No thinking process provided."
+        logger.debug(f"Thinking process: {think_content}")
+
+        # Clean result by removing <think> to focus on the list
+        cleaned_result = re.sub(r'<think>.*?</think>', '', raw_result, flags=re.DOTALL).strip()
+
         if pattern_type == "static":
-            match = re.search(r"@\[.*?\]", result, re.DOTALL)
+            match = re.search(r"@\[.*?\]", cleaned_result, re.DOTALL)
             if match:
                 try:
                     led_data = ast.literal_eval(match.group(0)[1:])  # Remove '@'
@@ -117,17 +132,17 @@ def index():
                         with animation_lock:
                             ANIMATION_DATA = {"frames": [led_data], "frame_rate": 0.1, "type": "static"}
                     else:
-                        led_data = "Validation Error: Invalid RGB values or length"
+                        led_data = "Validation Error: Expected exactly 10 RGB tuples with values 0-255"
                 except Exception as e:
                     led_data = f"Parsing Error: {e}"
             else:
-                led_data = "Format Error: No valid static pattern"
+                led_data = "Format Error: No valid static pattern found"
 
         elif pattern_type == "animated":
-            match = re.search(r'@\{.*"frames":\s*\[.*\],\s*"frame_rate":\s*[0-1]?\.\d+\}', result, re.DOTALL)
+            match = re.search(r'@\{.*"frames":\s*\[.*\],\s*"frame_rate":\s*[0-1]?\.\d+\}', cleaned_result, re.DOTALL)
             if match:
                 try:
-                    led_data = ast.literal_eval(match.group(1))
+                    led_data = ast.literal_eval(match.group(0)[1:])  # Remove '@'
                     frames, frame_rate = led_data["frames"], led_data["frame_rate"]
                     if (len(frames) >= 5 and 
                         all(len(f) == 10 and all(len(c) == 3 and all(0 <= v <= 255 for v in c) for c in f) for f in frames) and 
@@ -140,13 +155,14 @@ def index():
                 except Exception as e:
                     led_data = f"Parsing Error: {e}"
             else:
-                led_data = "Format Error: Invalid animation data"
+                led_data = "Format Error: No valid animation data found"
 
-        print(f"Writing to led_pattern.json: {json.dumps({
+        logger.debug(f"Writing to led_pattern.json: {json.dumps({
             'pattern_type': pattern_type,
             'generated_at': timestamp,
-            'data': led_data if status == 'Pass' else None,
-            'validation_status': status
+            'data': led_data if status == "Pass" else None,
+            'validation_status': status,
+            'think_content': think_content if think_content != "No thinking process provided." else None
         }, indent=4)}")
 
         with open("led_pattern.json", "w") as json_file:
@@ -154,10 +170,19 @@ def index():
                 "pattern_type": pattern_type,
                 "generated_at": timestamp,
                 "data": led_data if status == "Pass" else None,
-                "validation_status": status
+                "validation_status": status,
+                "think_content": think_content if think_content != "No thinking process provided." else None
             }, json_file, indent=4)
 
-        LAST_RESULT = {"status": status, "timestamp": timestamp, "raw_output": result, "pattern_type": pattern_type}
+        # Update LAST_RESULT with think_content
+        LAST_RESULT = {
+            "status": status,
+            "timestamp": timestamp,
+            "raw_output": raw_result,
+            "pattern_type": pattern_type,
+            "think_content": think_content if think_content != "No thinking process provided." else None,
+            "data": led_data if status == "Pass" else None
+        }
 
         conn = get_db_connection()
         if conn:
@@ -165,29 +190,28 @@ def index():
                 with conn.cursor() as cursor:
                     cursor.execute(
                         """
-                        INSERT INTO led_history (timestamp, prompt, theme, temperature, ip_address, pattern_generated, pattern_type, 
-                                                api_response_length, status, raw_output)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        INSERT INTO led_history (timestamp, prompt, theme, temperature, ip_address, pattern_generated, 
+                                                pattern_type, api_response_length, status, raw_output, think_content)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                         """,
-                        (timestamp, user_prompt, theme, temp, ip_address, 
-                         json.dumps(led_data) if led_data else None, pattern_type,
-                         len(raw_result), status, raw_result)
+                        (timestamp, user_prompt, theme, temp, ip_address,
+                        json.dumps(led_data) if led_data else None, pattern_type,
+                        len(raw_result), status, raw_result,
+                        think_content if think_content != "No thinking process provided." else None)
                     )
                 conn.commit()
             except mysql.connector.Error as e:
-                print(f"Database Insert Error: {e}")
+                logger.error(f"Database Insert Error: {e}")
             finally:
                 conn.close()
 
-        return jsonify({
-            "status": status,
-            "timestamp": timestamp,
-            "raw_output": raw_result,
-            "pattern_type": pattern_type,
-            "data": led_data if status == "Pass" else None
-        })
+        return jsonify(LAST_RESULT)
 
     return jsonify(LAST_RESULT)
+
+@app.route('/')
+def redirect_to_leds():
+    return redirect(url_for('index'))
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5047, debug=True)
