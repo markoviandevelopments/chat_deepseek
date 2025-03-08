@@ -126,14 +126,24 @@ def index():
             if match:
                 try:
                     raw_list = match.group(0)[1:]  # Remove '@'
+                    logger.debug(f"Raw list from API: {raw_list}")
                     parsed_data = ast.literal_eval(raw_list)
+                    logger.debug(f"Parsed data: {parsed_data}")
+                    # Handle the extra nesting level (list of one list)
+                    if isinstance(parsed_data, list) and len(parsed_data) == 1:
+                        inner_list = parsed_data[0]
+                    else:
+                        inner_list = parsed_data
                     # Flatten the list if it contains pairs of tuples
                     flat_list = []
-                    for item in parsed_data:
+                    for item in inner_list:
                         if isinstance(item, list) and len(item) == 2 and all(len(t) == 3 for t in item):
                             flat_list.extend(item)  # Unpack [red_tuple, pink_tuple] into individual tuples
                         elif len(item) == 3 and all(0 <= v <= 255 for v in item):
                             flat_list.append(item)  # Single tuple
+                        else:
+                            logger.warning(f"Invalid item in inner list: {item}")
+                    logger.debug(f"Flattened list: {flat_list}")
                     if len(flat_list) == 10 and all(len(t) == 3 and all(0 <= v <= 255 for v in t) for t in flat_list):
                         led_data = flat_list
                         status = "Pass"
@@ -141,10 +151,13 @@ def index():
                             ANIMATION_DATA = {"frames": [led_data], "frame_rate": 0.1, "type": "static"}
                     else:
                         led_data = f"Validation Error: Expected exactly 10 RGB tuples with values 0-255, got {len(flat_list)}"
+                        logger.error(led_data)
                 except Exception as e:
                     led_data = f"Parsing Error: {e}"
+                    logger.error(led_data)
             else:
                 led_data = "Format Error: No valid static pattern found"
+                logger.error(f"No match found in cleaned result: {cleaned_result}")
                 
         elif pattern_type == "animated":
             match = re.search(r'@\{.*"frames":\s*\[.*\],\s*"frame_rate":\s*[0-1]?\.\d+\}', cleaned_result, re.DOTALL)
