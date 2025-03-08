@@ -125,19 +125,27 @@ def index():
             match = re.search(r"@\[.*?\]", cleaned_result, re.DOTALL)
             if match:
                 try:
-                    led_data = ast.literal_eval(match.group(0)[1:])  # Remove '@'
-                    if (len(led_data) == 10 and 
-                        all(len(c) == 3 and all(0 <= v <= 255 for v in c) for c in led_data)):
+                    raw_list = match.group(0)[1:]  # Remove '@'
+                    parsed_data = ast.literal_eval(raw_list)
+                    # Flatten the list if it contains pairs of tuples
+                    flat_list = []
+                    for item in parsed_data:
+                        if isinstance(item, list) and len(item) == 2 and all(len(t) == 3 for t in item):
+                            flat_list.extend(item)  # Unpack [red_tuple, pink_tuple] into individual tuples
+                        elif len(item) == 3 and all(0 <= v <= 255 for v in item):
+                            flat_list.append(item)  # Single tuple
+                    if len(flat_list) == 10 and all(len(t) == 3 and all(0 <= v <= 255 for v in t) for t in flat_list):
+                        led_data = flat_list
                         status = "Pass"
                         with animation_lock:
                             ANIMATION_DATA = {"frames": [led_data], "frame_rate": 0.1, "type": "static"}
                     else:
-                        led_data = "Validation Error: Expected exactly 10 RGB tuples with values 0-255"
+                        led_data = f"Validation Error: Expected exactly 10 RGB tuples with values 0-255, got {len(flat_list)}"
                 except Exception as e:
                     led_data = f"Parsing Error: {e}"
             else:
                 led_data = "Format Error: No valid static pattern found"
-
+                
         elif pattern_type == "animated":
             match = re.search(r'@\{.*"frames":\s*\[.*\],\s*"frame_rate":\s*[0-1]?\.\d+\}', cleaned_result, re.DOTALL)
             if match:
