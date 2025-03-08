@@ -219,7 +219,10 @@ def index():
 
 @app.route('/')
 def redirect_to_leds():
-    return redirect(url_for('index'))
+    try:
+        return app.send_static_file('led_app.html')  # Serve the frontend
+    except FileNotFoundError:
+        return jsonify({"error": "Frontend file led_app.html not found in static folder"}), 404
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5047, debug=True)
