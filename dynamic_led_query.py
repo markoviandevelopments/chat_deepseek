@@ -24,7 +24,7 @@ emit_queue = Queue()
 def background_emitter():
     while True:
         event, data = emit_queue.get()
-        socketio.emit(event, data, namespace="/", broadcast=True)
+        socketio.emit(event, data, namespace="/")  # Removed broadcast=True
         print(f"Emitted WebSocket pattern: {data['pattern']}")
         emit_queue.task_done()
 
@@ -45,8 +45,17 @@ def update_led_pattern():
                             new_data.get("validation_status") == "Pass" and 
                             new_data.get("data") is not None):
                             led_pattern_data = new_data
-                            emit_queue.put(("led_pattern_update", {"pattern": led_pattern_data["data"]}))
-                            print(f"Queued WebSocket pattern: {led_pattern_data['data']}")
+                            # Handle both static and animated patterns
+                            pattern_to_send = (
+                                led_pattern_data["data"]["frames"][0] if isinstance(led_pattern_data["data"], dict) and "frames" in led_pattern_data["data"]
+                                else led_pattern_data["data"]
+                            )
+                            if (isinstance(pattern_to_send, list) and len(pattern_to_send) == 10 and
+                                all(isinstance(frame, list) and len(frame) == 3 and all(0 <= v <= 255 for v in frame) for frame in pattern_to_send)):
+                                emit_queue.put(("led_pattern_update", {"pattern": pattern_to_send}))
+                                print(f"Queued WebSocket pattern: {pattern_to_send}")
+                            else:
+                                print(f"Invalid pattern format: {pattern_to_send}")
                         else:
                             print(f"Invalid pattern data: {new_data}")
                             led_pattern_data = {

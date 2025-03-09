@@ -11,7 +11,6 @@ import mysql.connector
 import threading
 import logging
 
-# Set up logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
@@ -51,26 +50,6 @@ def query_api(user_prompt, temperature=0.7):
         logger.error(f"API Request Error: {e}")
         return f"Error: {e}"
     
-def emit_animation():
-    """Background task to emit animation frames via WebSocket."""
-    global ANIMATION_DATA
-    while True:
-        with animation_lock:
-            if ANIMATION_DATA["frames"]:
-                if ANIMATION_DATA["type"] == "static":
-                    socketio.emit("led_update", {"pattern": ANIMATION_DATA["frames"][0]})
-                    logger.debug(f"Emitted static frame: {ANIMATION_DATA['frames'][0]}")
-                    socketio.sleep(5)
-                elif ANIMATION_DATA["type"] == "animated":
-                    for frame in ANIMATION_DATA["frames"]:
-                        socketio.emit("led_update", {"pattern": frame})
-                        logger.debug(f"Emitted animated frame: {frame}")
-                        socketio.sleep(ANIMATION_DATA["frame_rate"])
-            else:
-                socketio.sleep(1)
-
-socketio.start_background_task(emit_animation)
-
 @app.route("/leds", methods=["GET", "POST"])
 def index():
     global LAST_RESULT, ANIMATION_DATA
