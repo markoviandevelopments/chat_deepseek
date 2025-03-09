@@ -18,8 +18,7 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__, static_url_path="/leds/static")
 app.config["APPLICATION_ROOT"] = "/leds"
-socketio = SocketIO(app, cors_allowed_origins="https://markovianchats.duckdns.org", async_mode='eventlet')
-
+socketio = SocketIO(app, cors_allowed_origins="https://markovianchats.duckdns.org:8443", async_mode='eventlet')
 CORS(app)
 
 API_URL = "http://50.188.120.138:5049/api/deepseek"
