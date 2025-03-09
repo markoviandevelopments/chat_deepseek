@@ -4,7 +4,6 @@ import time
 import threading
 from flask import Flask, jsonify
 from flask_socketio import SocketIO, emit
-import eventlet
 
 app = Flask(__name__, static_url_path="/leds/static")
 app.config["APPLICATION_ROOT"] = "/leds"
@@ -33,8 +32,8 @@ def update_led_pattern():
                             new_data.get("validation_status") == "Pass" and 
                             new_data.get("data") is not None):
                             led_pattern_data = new_data
-                            # Emit the pattern via WebSocket
-                            socketio.emit("led_pattern_update", {"pattern": led_pattern_data["data"]}, broadcast=True)
+                            # Emit within the Flask-SocketIO context
+                            socketio.emit("led_pattern_update", {"pattern": led_pattern_data["data"]}, namespace="/", broadcast=True)
                             print(f"Emitted WebSocket pattern: {led_pattern_data['data']}")
                         else:
                             print(f"Invalid pattern data: {new_data}")
@@ -59,5 +58,4 @@ def get_led_pattern():
         return jsonify(led_pattern_data)
 
 if __name__ == "__main__":
-    eventlet.monkey_patch()  # Required for SocketIO with eventlet
     socketio.run(app, host="0.0.0.0", port=5048, debug=False)
