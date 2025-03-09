@@ -128,7 +128,7 @@ def index():
                 logger.error(f"No match found in cleaned result: {cleaned_result}")
 
         elif pattern_type == "animated":
-            match = re.search(r'@\{.*"frames":\s*\[.*\],\s*"frame_rate":\s*[0-1]?\.\d+\}', cleaned_result, re.DOTALL)
+            match = re.search(r"@\{.*\}", cleaned_result, re.DOTALL)
             if match:
                 try:
                     led_data = ast.literal_eval(match.group(0)[1:])  # Remove '@'
