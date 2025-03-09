@@ -216,7 +216,7 @@ def handle_connect():
 if __name__ == "__main__":
     print(f"Starting server on 0.0.0.0:5047")
     try:
-        socketio.run(app, host="0.0.0.0", port=5047, debug=False)
+        socketio.run(app, host="0.0.0.0", port=5048, debug=False)
     except Exception as e:
         print(f"Failed to start server: {e}")
         raise
