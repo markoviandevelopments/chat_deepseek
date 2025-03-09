@@ -2,7 +2,10 @@ import json
 import os
 import time
 import threading
+from queue import Queue
 from flask import Flask, jsonify
+import eventlet  # Import eventlet first
+eventlet.monkey_patch()  # Apply monkey patching before other imports
 from flask_socketio import SocketIO, emit
 
 app = Flask(__name__, static_url_path="/leds/static")
@@ -16,6 +19,16 @@ led_pattern_data = {
     "validation_status": "no_valid_pattern"
 }
 pattern_lock = threading.Lock()
+emit_queue = Queue()
+
+def background_emitter():
+    while True:
+        event, data = emit_queue.get()
+        socketio.emit(event, data, namespace="/", broadcast=True)
+        print(f"Emitted WebSocket pattern: {data['pattern']}")
+        emit_queue.task_done()
+
+threading.Thread(target=background_emitter, daemon=True).start()
 
 def update_led_pattern():
     global led_pattern_data
@@ -32,9 +45,8 @@ def update_led_pattern():
                             new_data.get("validation_status") == "Pass" and 
                             new_data.get("data") is not None):
                             led_pattern_data = new_data
-                            # Emit within the Flask-SocketIO context
-                            socketio.emit("led_pattern_update", {"pattern": led_pattern_data["data"]}, namespace="/", broadcast=True)
-                            print(f"Emitted WebSocket pattern: {led_pattern_data['data']}")
+                            emit_queue.put(("led_pattern_update", {"pattern": led_pattern_data["data"]}))
+                            print(f"Queued WebSocket pattern: {led_pattern_data['data']}")
                         else:
                             print(f"Invalid pattern data: {new_data}")
                             led_pattern_data = {
