@@ -128,10 +128,20 @@ def index():
                 logger.error(f"No match found in cleaned result: {cleaned_result}")
 
         elif pattern_type == "animated":
-            match = re.search(r"@\{.*\}", cleaned_result, re.DOTALL)
+            logger.debug(f"Raw DeepSeek response: {raw_result}")
+            # Clean <think> and extract dict between ```python``` markers if present
+            cleaned_result = re.sub(r'<think>.*?</think>', '', raw_result, flags=re.DOTALL).strip()
+            logger.debug(f"Cleaned result: {cleaned_result}")
+            # Look for dict with or without @, possibly inside ```python```
+            match = re.search(r'(?:@)?\{.*"frames":.*"frame_rate":.*\}', cleaned_result, re.DOTALL)
+            if not match:
+                # Try extracting from ```python``` block
+                match = re.search(r'```python\s*(\{.*"frames":.*"frame_rate":.*\})\s*```', cleaned_result, re.DOTALL)
             if match:
                 try:
-                    led_data = ast.literal_eval(match.group(0)[1:])  # Remove '@'
+                    # Use group(1) if ```python``` match, else group(0) and strip '@' if present
+                    dict_str = match.group(1) if match.lastindex else match.group(0).lstrip('@')
+                    led_data = ast.literal_eval(dict_str)
                     frames, frame_rate = led_data["frames"], led_data["frame_rate"]
                     if (len(frames) >= 5 and 
                         all(len(f) == 10 and all(len(c) == 3 and all(0 <= v <= 255 for v in c) for c in f) for f in frames) and 
@@ -140,11 +150,14 @@ def index():
                         with animation_lock:
                             ANIMATION_DATA = {"frames": frames, "frame_rate": frame_rate, "type": "animated"}
                     else:
-                        led_data = "Validation Error: Invalid frames or frame_rate"
+                        led_data = f"Validation Error: Frames: {len(frames)}, Frame Rate: {frame_rate}"
+                        logger.error(led_data)
                 except Exception as e:
                     led_data = f"Parsing Error: {e}"
+                    logger.error(led_data)
             else:
-                led_data = "Format Error: No valid animation data found"
+                led_data = f"Format Error: No valid animation data found in '{cleaned_result}'"
+                logger.error(led_data)
 
         logger.debug(f"Writing to led_pattern.json: {json.dumps({
             'pattern_type': pattern_type,
