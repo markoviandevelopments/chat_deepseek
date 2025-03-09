@@ -158,7 +158,7 @@ def index():
             else:
                 led_data = "Format Error: No valid static pattern found"
                 logger.error(f"No match found in cleaned result: {cleaned_result}")
-                
+
         elif pattern_type == "animated":
             match = re.search(r'@\{.*"frames":\s*\[.*\],\s*"frame_rate":\s*[0-1]?\.\d+\}', cleaned_result, re.DOTALL)
             if match:
