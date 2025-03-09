@@ -1,16 +1,16 @@
+import eventlet
+eventlet.monkey_patch()
+from flask import Flask, jsonify
+from flask_socketio import SocketIO, emit
 import json
 import os
 import time
 import threading
 from queue import Queue
-from flask import Flask, jsonify
-import eventlet  # Import eventlet first
-eventlet.monkey_patch()  # Apply monkey patching before other imports
-from flask_socketio import SocketIO, emit
 
 app = Flask(__name__, static_url_path="/leds/static")
 app.config["APPLICATION_ROOT"] = "/leds"
-socketio = SocketIO(app, cors_allowed_origins="*")  # Enable CORS for WebSocket
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')
 
 led_pattern_data = {
     "pattern_type": "static",
@@ -24,8 +24,9 @@ emit_queue = Queue()
 def background_emitter():
     while True:
         event, data = emit_queue.get()
-        socketio.emit(event, data, namespace="/")  # Removed broadcast=True
-        print(f"Emitted WebSocket pattern: {data['pattern']}")
+        with app.app_context():  # Add context for thread safety
+            socketio.emit(event, data, namespace="/")
+            print(f"Emitted WebSocket pattern: {data['pattern']}")
         emit_queue.task_done()
 
 threading.Thread(target=background_emitter, daemon=True).start()
@@ -45,7 +46,6 @@ def update_led_pattern():
                             new_data.get("validation_status") == "Pass" and 
                             new_data.get("data") is not None):
                             led_pattern_data = new_data
-                            # Handle both static and animated patterns
                             pattern_to_send = (
                                 led_pattern_data["data"]["frames"][0] if isinstance(led_pattern_data["data"], dict) and "frames" in led_pattern_data["data"]
                                 else led_pattern_data["data"]
@@ -79,4 +79,4 @@ def get_led_pattern():
         return jsonify(led_pattern_data)
 
 if __name__ == "__main__":
-    socketio.run(app, host="0.0.0.0", port=5048, debug=False)
+    socketio.run(app, host="0.0.0.0", port=5048, debug=True)
