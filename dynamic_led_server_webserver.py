@@ -122,35 +122,24 @@ def index():
         cleaned_result = re.sub(r'<think>.*?</think>', '', raw_result, flags=re.DOTALL).strip()
 
         if pattern_type == "static":
-            match = re.search(r"@\[.*?\]", cleaned_result, re.DOTALL)
+            # Use the old regex to extract the RGB list
+            match = re.search(r"\[\s*\[\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\](?:\s*,\s*\[\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\]){9}\s*\]", cleaned_result)
             if match:
                 try:
-                    raw_list = match.group(0)[1:]  # Remove '@'
+                    raw_list = match.group(0)
                     logger.debug(f"Raw list from API: {raw_list}")
                     parsed_data = ast.literal_eval(raw_list)
                     logger.debug(f"Parsed data: {parsed_data}")
-                    # Handle the extra nesting level (list of one list)
-                    if isinstance(parsed_data, list) and len(parsed_data) == 1:
-                        inner_list = parsed_data[0]
-                    else:
-                        inner_list = parsed_data
-                    # Flatten the list if it contains pairs of tuples
-                    flat_list = []
-                    for item in inner_list:
-                        if isinstance(item, list) and len(item) == 2 and all(len(t) == 3 for t in item):
-                            flat_list.extend(item)  # Unpack [red_tuple, pink_tuple] into individual tuples
-                        elif len(item) == 3 and all(0 <= v <= 255 for v in item):
-                            flat_list.append(item)  # Single tuple
-                        else:
-                            logger.warning(f"Invalid item in inner list: {item}")
-                    logger.debug(f"Flattened list: {flat_list}")
-                    if len(flat_list) == 10 and all(len(t) == 3 and all(0 <= v <= 255 for v in t) for t in flat_list):
-                        led_data = flat_list
+                    
+                    # Validate the list
+                    if (isinstance(parsed_data, list) and len(parsed_data) == 10 and 
+                        all(isinstance(t, list) and len(t) == 3 and all(0 <= v <= 255 for v in t) for t in parsed_data)):
+                        led_data = parsed_data
                         status = "Pass"
                         with animation_lock:
                             ANIMATION_DATA = {"frames": [led_data], "frame_rate": 0.1, "type": "static"}
                     else:
-                        led_data = f"Validation Error: Expected exactly 10 RGB tuples with values 0-255, got {len(flat_list)}"
+                        led_data = f"Validation Error: Expected exactly 10 RGB tuples with values 0-255, got {len(parsed_data)}"
                         logger.error(led_data)
                 except Exception as e:
                     led_data = f"Parsing Error: {e}"
