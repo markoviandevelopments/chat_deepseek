@@ -1,4 +1,6 @@
-from flask import Flask, request, jsonify, redirect, url_for
+import eventlet
+eventlet.monkey_patch()
+from flask import Flask, request, jsonify, redirect
 from flask_socketio import SocketIO, emit
 import os
 import requests
@@ -16,8 +18,7 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__, static_url_path="/leds/static")
 app.config["APPLICATION_ROOT"] = "/leds"
-
-socketio = SocketIO(app, cors_allowed_origins="https://markovianchats.duckdns.org")
+socketio = SocketIO(app, cors_allowed_origins="https://markovianchats.duckdns.org", async_mode='eventlet')
 
 CORS(app)
 
@@ -49,7 +50,7 @@ def query_api(user_prompt, temperature=0.7):
     except requests.RequestException as e:
         logger.error(f"API Request Error: {e}")
         return f"Error: {e}"
-    
+
 @app.route("/leds", methods=["GET", "POST"])
 def index():
     global LAST_RESULT, ANIMATION_DATA
@@ -62,7 +63,7 @@ def index():
 
         if not theme:
             return jsonify({"error": "Theme is required"}), 400
-        
+
         prompt_templates = {
             "static": (
                 f'Generate exactly 10 RGB tuples as a Python list that fully embodies the theme "{theme}". '
@@ -92,16 +93,15 @@ def index():
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         led_data, status = None, "Fail"
 
-        # Extract <think> section if present (for logging or display)
+        # Extract <think> section if present
         think_match = re.search(r'<think>.*?</think>', raw_result, re.DOTALL)
         think_content = think_match.group(0) if think_match else "No thinking process provided."
         logger.debug(f"Thinking process: {think_content}")
 
-        # Clean result by removing <think> to focus on the list
+        # Clean result by removing <think>
         cleaned_result = re.sub(r'<think>.*?</think>', '', raw_result, flags=re.DOTALL).strip()
 
         if pattern_type == "static":
-            # Use the old regex to extract the RGB list
             match = re.search(r"\[\s*\[\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\](?:\s*,\s*\[\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\]){9}\s*\]", cleaned_result)
             if match:
                 try:
@@ -109,14 +109,15 @@ def index():
                     logger.debug(f"Raw list from API: {raw_list}")
                     parsed_data = ast.literal_eval(raw_list)
                     logger.debug(f"Parsed data: {parsed_data}")
-                    
-                    # Validate the list
-                    if (isinstance(parsed_data, list) and len(parsed_data) == 10 and 
+                    if (isinstance(parsed_data, list) and len(parsed_data) == 10 and
                         all(isinstance(t, list) and len(t) == 3 and all(0 <= v <= 255 for v in t) for t in parsed_data)):
                         led_data = parsed_data
                         status = "Pass"
                         with animation_lock:
                             ANIMATION_DATA = {"frames": [led_data], "frame_rate": 0.1, "type": "static"}
+                        # Emit WebSocket pattern immediately
+                        socketio.emit("led_pattern_update", {"pattern": led_data}, namespace="/")
+                        print(f"Emitted WebSocket pattern: {led_data}")
                     else:
                         led_data = f"Validation Error: Expected exactly 10 RGB tuples with values 0-255, got {len(parsed_data)}"
                         logger.error(led_data)
@@ -133,26 +134,21 @@ def index():
                 try:
                     led_data = ast.literal_eval(match.group(0)[1:])  # Remove '@'
                     frames, frame_rate = led_data["frames"], led_data["frame_rate"]
-                    if (len(frames) >= 5 and 
-                        all(len(f) == 10 and all(len(c) == 3 and all(0 <= v <= 255 for v in c) for c in f) for f in frames) and 
+                    if (len(frames) >= 5 and
+                        all(len(f) == 10 and all(len(c) == 3 and all(0 <= v <= 255 for v in c) for c in f) for f in frames) and
                         0.05 <= frame_rate <= 1.0):
                         status = "Pass"
                         with animation_lock:
                             ANIMATION_DATA = {"frames": frames, "frame_rate": frame_rate, "type": "animated"}
+                        # Emit the first frame via WebSocket
+                        socketio.emit("led_pattern_update", {"pattern": frames[0]}, namespace="/")
+                        print(f"Emitted WebSocket pattern: {frames[0]}")
                     else:
                         led_data = "Validation Error: Invalid frames or frame_rate"
                 except Exception as e:
                     led_data = f"Parsing Error: {e}"
             else:
                 led_data = "Format Error: No valid animation data found"
-
-        logger.debug(f"Writing to led_pattern.json: {json.dumps({
-            'pattern_type': pattern_type,
-            'generated_at': timestamp,
-            'data': led_data if status == "Pass" else None,
-            'validation_status': status,
-            'think_content': think_content if think_content != "No thinking process provided." else None
-        }, indent=4)}")
 
         with open("led_pattern.json", "w") as json_file:
             json.dump({
@@ -163,7 +159,6 @@ def index():
                 "think_content": think_content if think_content != "No thinking process provided." else None
             }, json_file, indent=4)
 
-        # Update LAST_RESULT with think_content
         LAST_RESULT = {
             "status": status,
             "timestamp": timestamp,
@@ -179,14 +174,14 @@ def index():
                 with conn.cursor() as cursor:
                     cursor.execute(
                         """
-                        INSERT INTO led_history (timestamp, prompt, theme, temperature, ip_address, pattern_generated, 
+                        INSERT INTO led_history (timestamp, prompt, theme, temperature, ip_address, pattern_generated,
                                                 pattern_type, api_response_length, status, raw_output, think_content)
                         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                         """,
                         (timestamp, user_prompt, theme, temp, ip_address,
-                        json.dumps(led_data) if led_data else None, pattern_type,
-                        len(raw_result), status, raw_result,
-                        think_content if think_content != "No thinking process provided." else None)
+                         json.dumps(led_data) if led_data else None, pattern_type,
+                         len(raw_result), status, raw_result,
+                         think_content if think_content != "No thinking process provided." else None)
                     )
                 conn.commit()
             except mysql.connector.Error as e:
@@ -201,9 +196,27 @@ def index():
 @app.route('/')
 def redirect_to_leds():
     try:
-        return app.send_static_file('led_app.html')  # Serve the frontend
+        return app.send_static_file('led_app.html')
     except FileNotFoundError:
         return jsonify({"error": "Frontend file led_app.html not found in static folder"}), 404
 
+@app.route("/led_pattern", methods=["GET"])
+def get_led_pattern():
+    with animation_lock:
+        return jsonify(ANIMATION_DATA)
+
+@socketio.on('connect', namespace='/')
+def handle_connect():
+    print("Client connected from:", request.remote_addr)
+    # Optionally emit the current pattern on connect
+    with animation_lock:
+        if ANIMATION_DATA["frames"]:
+            socketio.emit("led_pattern_update", {"pattern": ANIMATION_DATA["frames"][0]}, namespace="/")
+
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5047, debug=True)
+    print(f"Starting server on 0.0.0.0:5047")
+    try:
+        socketio.run(app, host="0.0.0.0", port=5047, debug=False)
+    except Exception as e:
+        print(f"Failed to start server: {e}")
+        raise
