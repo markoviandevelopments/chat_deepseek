@@ -80,4 +80,4 @@ def get_led_pattern():
 
 if __name__ == "__main__":
     print(f"Starting server on 0.0.0.0:5048")
-    socketio.run(app, host="0.0.0.0", port=5048, debug=True)
+    socketio.run(app, host="0.0.0.0", port=5048, debug=False)
