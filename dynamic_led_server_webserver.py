@@ -44,7 +44,7 @@ def get_db_connection():
 def query_api(user_prompt, temperature=0.7):
     params = {"prompt": user_prompt, "temperature": temperature}
     try:
-        response = requests.get(API_URL, params=params, timeout=10)  # Add timeout
+        response = requests.get(API_URL, params=params, timeout=150)
         response.raise_for_status()
         return response.json().get("response", "").strip() or "No response received."
     except requests.RequestException as e:
