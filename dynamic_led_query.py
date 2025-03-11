@@ -22,33 +22,31 @@ def update_led_pattern():
             if os.path.exists("led_pattern.json"):
                 current_modified = os.path.getmtime("led_pattern.json")
                 if current_modified > last_modified:
-                    with open("led_pattern.json", "r", encoding="utf-8") as file:
+                    with open("led_pattern.json", "r") as file:
                         new_data = json.load(file)
                     with pattern_lock:
-                        if (isinstance(new_data, dict) and 
-                            new_data.get("validation_status") == "Pass" and 
-                            new_data.get("data") is not None):
-                            led_pattern_data = new_data
-                            pattern_to_send = led_pattern_data["data"]
-                            if led_pattern_data["pattern_type"] == "static":
-                                # Static: wrap as single pattern
-                                if (isinstance(pattern_to_send, list) and len(pattern_to_send) == 10 and
-                                    all(isinstance(frame, list) and len(frame) == 3 and all(0 <= v <= 255 for v in frame) for frame in pattern_to_send)):
-                                    pattern_to_send = {"pattern": pattern_to_send}
-                                else:
-                                    print(f"Invalid static pattern format: {pattern_to_send}")
-                                    continue
-                            # Animated: send full data (frames and frame_rate)
+                        if isinstance(new_data, dict) and new_data.get("validation_status") == "Pass":
+                            pattern_type = new_data["pattern_type"]
+                            
+                            # ===== FIXED FORMATTING =====
+                            if pattern_type == "static":
+                                pattern_to_send = {
+                                    "pattern": new_data["data"]
+                                }
+                            elif pattern_type == "animated":
+                                pattern_to_send = {
+                                    "frames": new_data["data"]["frames"],
+                                    "frame_rate": new_data["data"]["frame_rate"]
+                                }
+                            else:
+                                continue
+                            # ===========================
+                            
                             asyncio.run(send_to_clients(pattern_to_send))
-                            print(f"Sent WebSocket data: {pattern_to_send}")
+                            print(f"Sent: {json.dumps(pattern_to_send, indent=2)}")
+                            
                         else:
-                            print(f"Invalid pattern data: {new_data}")
-                            led_pattern_data = {
-                                "pattern_type": "static",
-                                "generated_at": None,
-                                "data": {"frames": [[[0, 0, 0] for _ in range(10)]], "frame_rate": 0.1},
-                                "validation_status": "invalid_pattern"
-                            }
+                            print("Invalid pattern data")
                     last_modified = current_modified
             else:
                 print("led_pattern.json not found")
